@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 const NAV = [
   { href: "#collection", label: "Collection" },
   { href: "#story", label: "Our Story" },
@@ -16,8 +18,17 @@ export function Footer() {
     <footer className="border-t border-gold-500/15 bg-noir-950">
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 px-5 py-16 sm:px-8 md:grid-cols-[2fr_1fr_1fr]">
         <div>
-          <p className="font-serif text-3xl text-cream">
-            Thé <span className="italic text-gold-400">Noir</span>
+          <p className="flex items-center gap-3 font-serif text-3xl text-cream">
+            <Image
+              src="/images/logo.png"
+              alt=""
+              width={40}
+              height={40}
+              className="h-10 w-10"
+            />
+            <span>
+              Thé <span className="italic text-gold-400">Noir</span>
+            </span>
           </p>
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-cream-muted">
             Vietnam&rsquo;s house of black tea. Single-origin leaves, slow
@@ -61,8 +72,6 @@ export function Footer() {
           </ul>
           <p className="mt-8 text-sm text-cream-faint">
             hello@thenoir.vn
-            <br />
-            +84 28 3512 2016
           </p>
         </div>
       </div>

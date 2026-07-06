@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { EASE_LUXE } from "./reveal";
@@ -46,9 +47,18 @@ export function Navbar() {
       >
         <a
           href="#top"
-          className="font-serif text-xl tracking-wide text-cream sm:text-2xl"
+          className="flex items-center gap-3 font-serif text-xl tracking-wide text-cream sm:text-2xl"
         >
-          Thé <span className="italic text-gold-400">Noir</span>
+          <Image
+            src="/images/logo.png"
+            alt=""
+            width={28}
+            height={28}
+            className="h-7 w-7"
+          />
+          <span>
+            Thé <span className="italic text-gold-400">Noir</span>
+          </span>
         </a>
 
         {/* Desktop links */}

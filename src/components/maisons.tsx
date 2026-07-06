@@ -4,10 +4,10 @@ import { ArrowUpRight } from "lucide-react";
 import { Reveal } from "./reveal";
 
 const CITIES = [
-  { name: "Sài Gòn", count: "09 maisons", note: "Flagship · 42 Đồng Khởi, D1" },
-  { name: "Hà Nội", count: "05 maisons", note: "Salon · 18 Phan Đình Phùng" },
-  { name: "Đà Nẵng", count: "03 maisons", note: "Riverside · 27 Bạch Đằng" },
-  { name: "Huế", count: "01 maison", note: "Garden house · 15 Lê Lợi" },
+  { name: "Sài Gòn", count: "09 maisons", note: "Flagship · 42 Vườn Trà" },
+  { name: "Hà Nội", count: "05 maisons", note: "Salon · 18 Sương Mai" },
+  { name: "Đà Nẵng", count: "03 maisons", note: "Riverside · 27 Bến Lá" },
+  { name: "Huế", count: "01 maison", note: "Garden house · 15 Đồi Mây" },
 ];
 
 export function Maisons() {

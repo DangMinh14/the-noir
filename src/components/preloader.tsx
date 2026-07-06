@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { EASE_LUXE } from "./reveal";
 
@@ -26,14 +27,24 @@ export function Preloader() {
           transition={{ duration: 0.8, ease: EASE_LUXE }}
           className="fixed inset-0 z-[100] flex items-center justify-center bg-noir-950"
         >
-          <motion.p
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, ease: EASE_LUXE }}
-            className="font-serif text-4xl tracking-wide text-cream sm:text-5xl"
+            className="flex flex-col items-center gap-6"
           >
-            Thé <span className="italic text-gold-400">Noir</span>
-          </motion.p>
+            <Image
+              src="/images/logo.png"
+              alt=""
+              width={72}
+              height={72}
+              priority
+              className="h-18 w-18"
+            />
+            <p className="font-serif text-4xl tracking-wide text-cream sm:text-5xl">
+              Thé <span className="italic text-gold-400">Noir</span>
+            </p>
+          </motion.div>
         </motion.div>
       )}
     </AnimatePresence>
