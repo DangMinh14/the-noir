@@ -4,8 +4,12 @@
 
 export function TextField({
   label,
+  helperText,
   ...props
-}: { label: string } & React.InputHTMLAttributes<HTMLInputElement>) {
+}: {
+  label: string;
+  helperText?: string;
+} & React.InputHTMLAttributes<HTMLInputElement>) {
   const id = props.id ?? props.name;
   return (
     <label htmlFor={id} className="block">
@@ -17,6 +21,42 @@ export function TextField({
         {...props}
         className="w-full border border-gold-500/20 bg-noir-950 px-4 py-3 text-sm text-cream placeholder:text-cream-faint focus:border-gold-400 focus:outline-none"
       />
+      {helperText && (
+        <span className="mt-1.5 block text-[11px] leading-relaxed text-cream-faint">
+          {helperText}
+        </span>
+      )}
+    </label>
+  );
+}
+
+export function SelectField({
+  label,
+  helperText,
+  children,
+  ...props
+}: {
+  label: string;
+  helperText?: string;
+} & React.SelectHTMLAttributes<HTMLSelectElement>) {
+  const id = props.id ?? props.name;
+  return (
+    <label htmlFor={id} className="block">
+      <span className="mb-2 block text-[11px] uppercase tracking-[0.22em] text-cream-muted">
+        {label}
+      </span>
+      <select
+        id={id}
+        {...props}
+        className="w-full cursor-pointer border border-gold-500/20 bg-noir-950 px-4 py-3 text-sm text-cream focus:border-gold-400 focus:outline-none"
+      >
+        {children}
+      </select>
+      {helperText && (
+        <span className="mt-1.5 block text-[11px] leading-relaxed text-cream-faint">
+          {helperText}
+        </span>
+      )}
     </label>
   );
 }

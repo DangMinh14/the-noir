@@ -1,12 +1,18 @@
 export const API_URL =
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5051";
 
+// Mirrors ProductService.FallbackImageUrl on the backend: shown whenever a
+// product has no photo of its own yet.
+export const FALLBACK_PRODUCT_IMAGE =
+  "https://images.unsplash.com/photo-1544787219-7f47ccb76574?q=80&w=1200&auto=format&fit=crop";
+
 export type User = {
   id: number;
   email: string;
   displayName: string;
   role: "User" | "Admin";
   createdAt: string;
+  updatedAt: string;
 };
 
 export type AuthResponse = {
@@ -20,15 +26,25 @@ export type ForgotPasswordResponse = {
   resetToken: string | null;
 };
 
+export type Category = {
+  id: number;
+  name: string;
+  productCount: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type Product = {
   id: number;
   name: string;
-  category: string;
   description: string;
   priceVnd: number;
+  categoryId: number;
+  categoryName: string;
   imageUrl: string;
   imageAlt: string;
-  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type City = {
@@ -38,6 +54,8 @@ export type City = {
   kind: string;
   address: string;
   sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export class ApiError extends Error {
@@ -89,4 +107,34 @@ export async function api<T>(path: string, opts: ApiOptions = {}): Promise<T> {
   const data: unknown = await res.json().catch(() => null);
   if (!res.ok) throw new ApiError(extractMessage(data, res.status), res.status);
   return data as T;
+}
+
+// Resolves a product's ImageUrl (already absolute for Unsplash, or a
+// server-relative /uploads/... path) to something an <img> can load.
+export function resolveImageUrl(url: string): string {
+  if (!url) return FALLBACK_PRODUCT_IMAGE;
+  return url.startsWith("/") ? `${API_URL}${url}` : url;
+}
+
+export async function uploadProductImage(
+  file: File,
+  token: string | null,
+): Promise<string> {
+  const form = new FormData();
+  form.append("file", file);
+
+  let res: Response;
+  try {
+    res = await fetch(`${API_URL}/api/uploads/image`, {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      body: form,
+    });
+  } catch {
+    throw new ApiError("Cannot reach the server. Is the API running?", 0);
+  }
+
+  const data: unknown = await res.json().catch(() => null);
+  if (!res.ok) throw new ApiError(extractMessage(data, res.status), res.status);
+  return (data as { url: string }).url;
 }

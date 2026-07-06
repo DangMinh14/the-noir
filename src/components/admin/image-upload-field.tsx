@@ -1,0 +1,156 @@
+"use client";
+
+import { useRef, useState } from "react";
+import { ImageOff, Upload } from "lucide-react";
+import { FALLBACK_PRODUCT_IMAGE, resolveImageUrl } from "@/lib/api";
+
+export type ImageSelection =
+  | { kind: "unchanged" } // editing, keep whatever is already saved
+  | { kind: "file"; file: File; previewUrl: string }
+  | { kind: "url"; url: string }
+  | { kind: "none" }; // fall back to the stock photo
+
+// Product image picker: drag/pick a local file (with instant preview),
+// paste an external URL instead, or leave it for the stock-photo fallback.
+export function ImageUploadField({
+  currentImageUrl,
+  onChange,
+}: {
+  currentImageUrl?: string;
+  onChange: (selection: ImageSelection) => void;
+}) {
+  const [mode, setMode] = useState<"upload" | "url">("upload");
+  const [preview, setPreview] = useState<string | null>(
+    currentImageUrl ? resolveImageUrl(currentImageUrl) : null,
+  );
+  const [urlValue, setUrlValue] = useState(currentImageUrl ?? "");
+  const [fileName, setFileName] = useState<string | null>(null);
+  const [dragOver, setDragOver] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  function handleFile(file: File | undefined) {
+    if (!file) return;
+    const previewUrl = URL.createObjectURL(file);
+    setPreview(previewUrl);
+    setFileName(file.name);
+    onChange({ kind: "file", file, previewUrl });
+  }
+
+  function handleUrlChange(value: string) {
+    setUrlValue(value);
+    setPreview(value.trim() ? value : null);
+    onChange(value.trim() ? { kind: "url", url: value.trim() } : { kind: "none" });
+  }
+
+  return (
+    <div>
+      <span className="mb-2 block text-[11px] uppercase tracking-[0.22em] text-cream-muted">
+        Product photo
+      </span>
+
+      <div className="flex flex-col gap-4 sm:flex-row">
+        <div className="relative h-32 w-32 shrink-0 overflow-hidden border border-gold-500/20 bg-noir-950">
+          {preview ? (
+            // eslint-disable-next-line @next/next/no-img-element -- local blob/external previews, not an optimizable asset
+            <img
+              src={preview}
+              alt=""
+              className="h-full w-full object-cover"
+              onError={() => setPreview(FALLBACK_PRODUCT_IMAGE)}
+            />
+          ) : (
+            <div className="flex h-full w-full flex-col items-center justify-center gap-1.5 text-cream-faint">
+              <ImageOff size={22} aria-hidden />
+              <span className="text-[10px] uppercase tracking-[0.15em]">
+                No photo
+              </span>
+            </div>
+          )}
+        </div>
+
+        <div className="flex-1">
+          <div className="mb-3 flex gap-1 border border-gold-500/15 p-1 text-[11px] uppercase tracking-[0.15em]" role="tablist">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mode === "upload"}
+              onClick={() => setMode("upload")}
+              className={`flex-1 cursor-pointer px-3 py-1.5 transition-colors ${
+                mode === "upload"
+                  ? "bg-gold-500/15 text-gold-300"
+                  : "text-cream-faint hover:text-cream"
+              }`}
+            >
+              Upload
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mode === "url"}
+              onClick={() => setMode("url")}
+              className={`flex-1 cursor-pointer px-3 py-1.5 transition-colors ${
+                mode === "url"
+                  ? "bg-gold-500/15 text-gold-300"
+                  : "text-cream-faint hover:text-cream"
+              }`}
+            >
+              Image URL
+            </button>
+          </div>
+
+          {mode === "upload" ? (
+            <div
+              role="button"
+              tabIndex={0}
+              onClick={() => inputRef.current?.click()}
+              onKeyDown={(e) => e.key === "Enter" && inputRef.current?.click()}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setDragOver(true);
+              }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setDragOver(false);
+                handleFile(e.dataTransfer.files[0]);
+              }}
+              className={`flex cursor-pointer flex-col items-center justify-center gap-2 border border-dashed px-4 py-5 text-center transition-colors ${
+                dragOver
+                  ? "border-gold-400 bg-gold-500/10"
+                  : "border-gold-500/25 hover:border-gold-500/50"
+              }`}
+            >
+              <Upload size={18} className="text-gold-400" aria-hidden />
+              <p className="text-xs text-cream-muted">
+                {fileName ?? "Drop an image or click to browse"}
+              </p>
+              <p className="text-[11px] text-cream-faint">
+                JPG, PNG or WEBP, up to 5 MB
+              </p>
+              <input
+                ref={inputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                onChange={(e) => handleFile(e.target.files?.[0])}
+              />
+            </div>
+          ) : (
+            <input
+              type="url"
+              value={urlValue}
+              onChange={(e) => handleUrlChange(e.target.value)}
+              placeholder="https://..."
+              className="w-full border border-gold-500/20 bg-noir-950 px-4 py-3 text-sm text-cream placeholder:text-cream-faint focus:border-gold-400 focus:outline-none"
+            />
+          )}
+
+          <p className="mt-2.5 text-[11px] leading-relaxed text-cream-faint">
+            No photo yet? Leave this empty and a stock tea photo is used until
+            you upload one.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
