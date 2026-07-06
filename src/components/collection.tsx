@@ -1,8 +1,20 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import { motion, useReducedMotion } from "framer-motion";
 import { Reveal, EASE_LUXE } from "./reveal";
+
+const FALLBACK_IMAGES = [
+  "/images/product-fallback-1.jpg",
+  "/images/product-fallback-2.jpg",
+];
+
+// Deterministic pick so the same product always shows the same fallback.
+function fallbackFor(name: string) {
+  const sum = [...name].reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  return FALLBACK_IMAGES[sum % FALLBACK_IMAGES.length];
+}
 
 const PRODUCTS = [
   {
@@ -47,9 +59,50 @@ const PRODUCTS = [
   },
 ];
 
-export function Collection() {
-  const reduceMotion = useReducedMotion();
+type Product = (typeof PRODUCTS)[number];
 
+function ProductCard({ product, index }: { product: Product; index: number }) {
+  const reduceMotion = useReducedMotion();
+  const [imageFailed, setImageFailed] = useState(false);
+  const src = imageFailed ? fallbackFor(product.name) : product.image;
+
+  return (
+    <motion.article
+      initial={{ opacity: 0, y: reduceMotion ? 0 : 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{ duration: 0.9, delay: 0.08 * index, ease: EASE_LUXE }}
+      className="group"
+    >
+      <div className="relative aspect-[3/4] overflow-hidden bg-noir-800">
+        <Image
+          src={src}
+          alt={product.alt}
+          fill
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+          className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+          onError={() => setImageFailed(true)}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-noir-950/60 to-transparent opacity-60 transition-opacity duration-500 group-hover:opacity-30" />
+        <span className="absolute left-4 top-4 border border-gold-500/30 bg-noir-950/60 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-gold-300 backdrop-blur-sm">
+          {product.category}
+        </span>
+      </div>
+
+      <div className="mt-5 flex items-baseline justify-between gap-3">
+        <h3 className="font-serif text-2xl text-cream">{product.name}</h3>
+        <span className="font-serif text-lg tabular-nums text-gold-400">
+          {product.price}
+        </span>
+      </div>
+      <p className="mt-2 text-sm leading-relaxed text-cream-muted">
+        {product.description}
+      </p>
+    </motion.article>
+  );
+}
+
+export function Collection() {
   return (
     <section id="collection" className="mx-auto max-w-7xl px-5 py-28 sm:px-8 sm:py-36">
       <Reveal>
@@ -70,38 +123,7 @@ export function Collection() {
 
       <div className="mt-16 grid grid-cols-1 gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-4">
         {PRODUCTS.map((product, i) => (
-          <motion.article
-            key={product.name}
-            initial={{ opacity: 0, y: reduceMotion ? 0 : 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-60px" }}
-            transition={{ duration: 0.9, delay: 0.08 * i, ease: EASE_LUXE }}
-            className="group"
-          >
-            <div className="relative aspect-[3/4] overflow-hidden bg-noir-800">
-              <Image
-                src={product.image}
-                alt={product.alt}
-                fill
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-noir-950/60 to-transparent opacity-60 transition-opacity duration-500 group-hover:opacity-30" />
-              <span className="absolute left-4 top-4 border border-gold-500/30 bg-noir-950/60 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-gold-300 backdrop-blur-sm">
-                {product.category}
-              </span>
-            </div>
-
-            <div className="mt-5 flex items-baseline justify-between gap-3">
-              <h3 className="font-serif text-2xl text-cream">{product.name}</h3>
-              <span className="font-serif text-lg tabular-nums text-gold-400">
-                {product.price}
-              </span>
-            </div>
-            <p className="mt-2 text-sm leading-relaxed text-cream-muted">
-              {product.description}
-            </p>
-          </motion.article>
+          <ProductCard key={product.name} product={product} index={i} />
         ))}
       </div>
     </section>

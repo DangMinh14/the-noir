@@ -63,19 +63,22 @@ export function ImageUploadField({
 
       <div className="flex flex-col gap-4 sm:flex-row">
         <div className="relative h-32 w-32 shrink-0 overflow-hidden border border-gold-500/20 bg-noir-950">
-          {preview ? (
-            // eslint-disable-next-line @next/next/no-img-element -- local blob/external previews, not an optimizable asset
-            <img
-              src={preview}
-              alt=""
-              className="h-full w-full object-cover"
-              onError={() => setPreview(FALLBACK_PRODUCT_IMAGE)}
-            />
-          ) : (
-            <div className="flex h-full w-full flex-col items-center justify-center gap-1.5 text-cream-faint">
-              <ImageOff size={22} aria-hidden />
-              <span className="text-[10px] uppercase tracking-[0.15em]">
-                No photo
+          {/* eslint-disable-next-line @next/next/no-img-element -- local blob/external previews, not an optimizable asset */}
+          <img
+            src={preview || FALLBACK_PRODUCT_IMAGE}
+            alt=""
+            className="h-full w-full object-cover"
+            onError={(e) => {
+              if (e.currentTarget.src !== FALLBACK_PRODUCT_IMAGE) {
+                setPreview(FALLBACK_PRODUCT_IMAGE);
+              }
+            }}
+          />
+          {!preview && (
+            <div className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1.5 bg-noir-950/75 py-1.5 text-cream-faint">
+              <ImageOff size={12} aria-hidden />
+              <span className="text-[9px] uppercase tracking-[0.15em]">
+                Stock photo
               </span>
             </div>
           )}

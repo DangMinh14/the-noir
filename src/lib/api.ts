@@ -2,9 +2,9 @@ export const API_URL =
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5051";
 
 // Mirrors ProductService.FallbackImageUrl on the backend: shown whenever a
-// product has no photo of its own yet.
-export const FALLBACK_PRODUCT_IMAGE =
-  "https://images.unsplash.com/photo-1544787219-7f47ccb76574?q=80&w=1200&auto=format&fit=crop";
+// product has no photo of its own yet. Served from the API's wwwroot/branding,
+// not a static site asset, so it has to go through API_URL like an upload.
+export const FALLBACK_PRODUCT_IMAGE = `${API_URL}/branding/product-fallback.jpg`;
 
 export type User = {
   id: number;
