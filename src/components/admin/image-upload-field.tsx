@@ -1,8 +1,18 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { ImageOff, Upload } from "lucide-react";
+import { ImageOff, TriangleAlert, Upload } from "lucide-react";
 import { FALLBACK_PRODUCT_IMAGE, resolveImageUrl } from "@/lib/api";
+
+// Common mistake: pasting a photo-page link (unsplash.com/photos/slug-id)
+// instead of the direct image link (images.unsplash.com/photo-id). The
+// page link isn't an image, so it just fails to load with no clear reason.
+function pageLinkWarning(url: string): string | null {
+  if (/^https?:\/\/(www\.)?unsplash\.com\/photos\//i.test(url)) {
+    return 'This is an Unsplash page link, not the image itself. Right-click the photo and choose "Copy image address" instead (the correct link looks like images.unsplash.com/photo-...).';
+  }
+  return null;
+}
 
 export type ImageSelection =
   | { kind: "unchanged" } // editing, keep whatever is already saved
@@ -24,6 +34,7 @@ export function ImageUploadField({
     currentImageUrl ? resolveImageUrl(currentImageUrl) : null,
   );
   const [urlValue, setUrlValue] = useState(currentImageUrl ?? "");
+  const [urlWarning, setUrlWarning] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -37,9 +48,11 @@ export function ImageUploadField({
   }
 
   function handleUrlChange(value: string) {
+    const trimmed = value.trim();
     setUrlValue(value);
-    setPreview(value.trim() ? value : null);
-    onChange(value.trim() ? { kind: "url", url: value.trim() } : { kind: "none" });
+    setUrlWarning(pageLinkWarning(trimmed));
+    setPreview(trimmed || null);
+    onChange(trimmed ? { kind: "url", url: trimmed } : { kind: "none" });
   }
 
   return (
@@ -136,13 +149,24 @@ export function ImageUploadField({
               />
             </div>
           ) : (
-            <input
-              type="url"
-              value={urlValue}
-              onChange={(e) => handleUrlChange(e.target.value)}
-              placeholder="https://..."
-              className="w-full border border-gold-500/20 bg-noir-950 px-4 py-3 text-sm text-cream placeholder:text-cream-faint focus:border-gold-400 focus:outline-none"
-            />
+            <>
+              <input
+                type="url"
+                value={urlValue}
+                onChange={(e) => handleUrlChange(e.target.value)}
+                placeholder="https://..."
+                className="w-full border border-gold-500/20 bg-noir-950 px-4 py-3 text-sm text-cream placeholder:text-cream-faint focus:border-gold-400 focus:outline-none"
+              />
+              {urlWarning && (
+                <p
+                  role="alert"
+                  className="mt-2 flex items-start gap-2 border border-amber-400/25 bg-amber-950/20 px-3 py-2.5 text-[11px] leading-relaxed text-amber-300"
+                >
+                  <TriangleAlert size={14} className="mt-0.5 shrink-0" aria-hidden />
+                  {urlWarning}
+                </p>
+              )}
+            </>
           )}
 
           <p className="mt-2.5 text-[11px] leading-relaxed text-cream-faint">

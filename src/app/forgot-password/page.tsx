@@ -109,6 +109,10 @@ export default function ForgotPasswordPage() {
             name="resetToken"
             defaultValue={issuedToken ?? ""}
             placeholder="Paste your reset code"
+            autoComplete="one-time-code"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck={false}
             required
           />
           <TextField
