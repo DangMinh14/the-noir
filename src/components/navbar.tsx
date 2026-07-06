@@ -5,6 +5,7 @@ import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { EASE_LUXE } from "./reveal";
+import { MobileAuthLinks, UserMenu } from "./user-menu";
 
 const LINKS = [
   { href: "#collection", label: "Collection" },
@@ -75,12 +76,15 @@ export function Navbar() {
           ))}
         </ul>
 
-        <a
-          href="#maisons"
-          className="hidden items-center border border-gold-500/40 px-5 py-2.5 text-[12px] uppercase tracking-[0.2em] text-gold-300 transition-colors duration-300 hover:border-gold-400 hover:bg-gold-500/10 md:inline-flex"
-        >
-          Visit a Maison
-        </a>
+        <div className="hidden items-center gap-7 md:flex">
+          <a
+            href="#maisons"
+            className="inline-flex items-center border border-gold-500/40 px-5 py-2.5 text-[12px] uppercase tracking-[0.2em] text-gold-300 transition-colors duration-300 hover:border-gold-400 hover:bg-gold-500/10"
+          >
+            Visit a Maison
+          </a>
+          <UserMenu />
+        </div>
 
         {/* Mobile toggle — 44px touch target */}
         <button
@@ -123,6 +127,13 @@ export function Navbar() {
                   </a>
                 </motion.li>
               ))}
+              <motion.li
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.22, duration: 0.4, ease: EASE_LUXE }}
+              >
+                <MobileAuthLinks onNavigate={() => setOpen(false)} />
+              </motion.li>
               <motion.li
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
