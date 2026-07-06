@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AuthShell } from "@/components/auth/auth-shell";
@@ -12,17 +12,25 @@ import {
 } from "@/components/auth/fields";
 import { api, ApiError, type ForgotPasswordResponse } from "@/lib/api";
 
-// Step 1 asks for the email; step 2 takes the reset code plus a new password.
-// While there is no email service, the API returns the code directly and we
-// pre-fill it here.
+// Step 1 asks for the email; step 2 takes the reset code (delivered by
+// email) plus a new password.
 export default function ForgotPasswordPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
-  const [issuedToken, setIssuedToken] = useState<string | null>(null);
+  const [step, setStep] = useState<1 | 2>(1);
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const step = issuedToken === null ? 1 : 2;
+  const resetTokenRef = useRef<HTMLInputElement>(null);
+
+  // Belt-and-suspenders against browser autofill: some browsers still treat
+  // a plain text field sitting before two password fields as a "username"
+  // and silently fill it with a saved email, even with
+  // autoComplete="one-time-code" set. Clear it right after this step mounts
+  // so a stray autofill never survives into the submitted request.
+  useEffect(() => {
+    if (step === 2 && resetTokenRef.current) resetTokenRef.current.value = "";
+  }, [step]);
 
   async function requestCode(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -36,12 +44,8 @@ export default function ForgotPasswordPage() {
         { method: "POST", body: { email: value } },
       );
       setEmail(value);
-      setIssuedToken(res.resetToken ?? "");
-      setNotice(
-        res.resetToken
-          ? "Email delivery is not set up yet, so your reset code was filled in below."
-          : res.message,
-      );
+      setStep(2);
+      setNotice(res.message);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Something went wrong.");
     } finally {
@@ -87,8 +91,8 @@ export default function ForgotPasswordPage() {
       {step === 1 ? (
         <form onSubmit={requestCode} className="flex flex-col gap-5">
           <p className="text-sm leading-relaxed text-cream-muted">
-            Tell us the email you registered with and we will issue a reset
-            code.
+            Tell us the email you registered with and we will send a reset
+            code to your inbox.
           </p>
           <TextField
             label="Email"
@@ -103,12 +107,12 @@ export default function ForgotPasswordPage() {
         </form>
       ) : (
         <form onSubmit={resetPassword} className="flex flex-col gap-5">
-          <FormNotice message={notice} />
+          <FormNotice message={notice ?? `Check ${email} for your reset code.`} />
           <TextField
+            ref={resetTokenRef}
             label="Reset code"
             name="resetToken"
-            defaultValue={issuedToken ?? ""}
-            placeholder="Paste your reset code"
+            placeholder="Paste the code from your email"
             autoComplete="one-time-code"
             autoCorrect="off"
             autoCapitalize="off"

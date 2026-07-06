@@ -1,15 +1,13 @@
 "use client";
 
+import { forwardRef } from "react";
+
 // Small form primitives so every auth form looks the same.
 
-export function TextField({
-  label,
-  helperText,
-  ...props
-}: {
-  label: string;
-  helperText?: string;
-} & React.InputHTMLAttributes<HTMLInputElement>) {
+export const TextField = forwardRef<
+  HTMLInputElement,
+  { label: string; helperText?: string } & React.InputHTMLAttributes<HTMLInputElement>
+>(function TextField({ label, helperText, ...props }, ref) {
   const id = props.id ?? props.name;
   return (
     <label htmlFor={id} className="block">
@@ -17,6 +15,7 @@ export function TextField({
         {label}
       </span>
       <input
+        ref={ref}
         id={id}
         {...props}
         className="w-full border border-gold-500/20 bg-noir-950 px-4 py-3 text-sm text-cream placeholder:text-cream-faint focus:border-gold-400 focus:outline-none"
@@ -28,7 +27,7 @@ export function TextField({
       )}
     </label>
   );
-}
+});
 
 export function SelectField({
   label,

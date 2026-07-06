@@ -55,6 +55,9 @@ export default function CheckoutPage() {
             </span>
             .
           </p>
+          <p className="text-xs text-cream-faint">
+            A confirmation has been sent to your email.
+          </p>
           <div className="flex gap-4">
             <Link
               href="/profile"

@@ -1,5 +1,6 @@
 "use client";
 
+import { Search } from "lucide-react";
 import { ApiError } from "@/lib/api";
 
 export const thClass =
@@ -76,6 +77,34 @@ export function RowButton({
     >
       {children}
     </button>
+  );
+}
+
+export function SearchField({
+  value,
+  onChange,
+  placeholder = "Search",
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+}) {
+  return (
+    <label className="relative block w-full sm:w-64">
+      <Search
+        size={15}
+        className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-cream-faint"
+        aria-hidden
+      />
+      <input
+        type="search"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        aria-label={placeholder}
+        className="w-full border border-gold-500/20 bg-noir-950 py-2.5 pl-10 pr-4 text-sm text-cream placeholder:text-cream-faint focus:border-gold-400 focus:outline-none"
+      />
+    </label>
   );
 }
 

@@ -6,26 +6,38 @@ import {
   PanelHeading,
   PrimaryButton,
   RowButton,
+  SearchField,
   errorText,
   formatDate,
   tdClass,
   thClass,
 } from "@/components/admin/table-bits";
+import { Pagination } from "@/components/admin/pagination";
 import { FormError, SubmitButton, TextField } from "@/components/auth/fields";
-import { api, type Category } from "@/lib/api";
+import { useDebouncedValue } from "@/lib/use-debounced-value";
+import { api, type Category, type PagedResult } from "@/lib/api";
+
+const PAGE_SIZE = 10;
 
 export function CategoriesPanel({ token }: { token: string | null }) {
-  const [items, setItems] = useState<Category[] | null>(null);
+  const [result, setResult] = useState<PagedResult<Category> | null>(null);
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebouncedValue(search);
   const [editing, setEditing] = useState<Category | "new" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const load = useCallback(() => {
-    api<Category[]>("/api/categories")
-      .then(setItems)
+    const params = new URLSearchParams({ page: String(page), pageSize: String(PAGE_SIZE) });
+    if (debouncedSearch) params.set("search", debouncedSearch);
+    api<PagedResult<Category>>(`/api/categories/search?${params}`)
+      .then(setResult)
       .catch((err) => setError(errorText(err)));
-  }, []);
+  }, [page, debouncedSearch]);
   useEffect(load, [load]);
+
+  useEffect(() => setPage(1), [debouncedSearch]);
 
   async function save(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -101,44 +113,58 @@ export function CategoriesPanel({ token }: { token: string | null }) {
         </form>
       )}
 
-      {items === null ? (
+      <div className="mb-4">
+        <SearchField value={search} onChange={setSearch} placeholder="Search categories" />
+      </div>
+
+      {result === null ? (
         <EmptyState message="Loading..." />
-      ) : items.length === 0 ? (
-        <EmptyState message="No categories yet. Create the first one above." />
+      ) : result.items.length === 0 ? (
+        <EmptyState
+          message={search ? "No categories match your search." : "No categories yet. Create the first one above."}
+        />
       ) : (
-        <div className="overflow-x-auto border border-gold-500/10">
-          <table className="w-full min-w-125">
-            <thead className="border-b border-gold-500/10 bg-noir-900/60">
-              <tr>
-                <th className={thClass}>Name</th>
-                <th className={thClass}>Products</th>
-                <th className={thClass}>Created</th>
-                <th className={thClass}></th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((c) => (
-                <tr key={c.id} className="border-b border-gold-500/5 last:border-0">
-                  <td className={`${tdClass} text-cream`}>{c.name}</td>
-                  <td className={tdClass}>{c.productCount}</td>
-                  <td className={tdClass}>{formatDate(c.createdAt)}</td>
-                  <td className={`${tdClass} text-right whitespace-nowrap`}>
-                    <span className="inline-flex gap-4">
-                      <RowButton onClick={() => setEditing(c)}>Edit</RowButton>
-                      <RowButton
-                        danger
-                        disabled={c.productCount > 0}
-                        onClick={() => remove(c)}
-                      >
-                        Delete
-                      </RowButton>
-                    </span>
-                  </td>
+        <>
+          <div className="overflow-x-auto border border-gold-500/10">
+            <table className="w-full min-w-125">
+              <thead className="border-b border-gold-500/10 bg-noir-900/60">
+                <tr>
+                  <th className={thClass}>Name</th>
+                  <th className={thClass}>Products</th>
+                  <th className={thClass}>Created</th>
+                  <th className={thClass}></th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {result.items.map((c) => (
+                  <tr key={c.id} className="border-b border-gold-500/5 last:border-0">
+                    <td className={`${tdClass} text-cream`}>{c.name}</td>
+                    <td className={tdClass}>{c.productCount}</td>
+                    <td className={tdClass}>{formatDate(c.createdAt)}</td>
+                    <td className={`${tdClass} text-right whitespace-nowrap`}>
+                      <span className="inline-flex gap-4">
+                        <RowButton onClick={() => setEditing(c)}>Edit</RowButton>
+                        <RowButton
+                          danger
+                          disabled={c.productCount > 0}
+                          onClick={() => remove(c)}
+                        >
+                          Delete
+                        </RowButton>
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <Pagination
+            page={result.page}
+            pageSize={result.pageSize}
+            totalCount={result.totalCount}
+            onPageChange={setPage}
+          />
+        </>
       )}
     </section>
   );

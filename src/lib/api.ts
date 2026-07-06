@@ -23,7 +23,13 @@ export type AuthResponse = {
 
 export type ForgotPasswordResponse = {
   message: string;
-  resetToken: string | null;
+};
+
+export type PagedResult<T> = {
+  items: T[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
 };
 
 export type Category = {
@@ -82,6 +88,14 @@ export type Order = {
 export type CreateOrderRequest = {
   cityId: number;
   items: { productId: number; quantity: number }[];
+};
+
+export type DashboardStats = {
+  totalRevenueVnd: number;
+  totalOrders: number;
+  revenueByDay: { date: string; revenueVnd: number }[];
+  topProducts: { productName: string; quantitySold: number; revenueVnd: number }[];
+  revenueByCategory: { categoryName: string; revenueVnd: number }[];
 };
 
 export class ApiError extends Error {
