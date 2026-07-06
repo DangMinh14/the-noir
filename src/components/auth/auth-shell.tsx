@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { EASE_LUXE } from "../reveal";
+import { BackToHome } from "../back-to-home";
 
 // Centered card layout shared by the login, register and reset pages.
 export function AuthShell({
@@ -21,6 +22,8 @@ export function AuthShell({
         aria-hidden
         className="absolute left-1/2 top-1/2 h-[34rem] w-[34rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gold-500/6 blur-3xl"
       />
+
+      <BackToHome className="absolute left-5 top-6 z-10 sm:left-8" />
 
       <motion.div
         initial={{ opacity: 0, y: 24 }}

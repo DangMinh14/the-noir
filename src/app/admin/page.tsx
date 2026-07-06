@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
+import { BackToHome } from "@/components/back-to-home";
 import {
   api,
   ApiError,
@@ -78,9 +79,12 @@ export default function AdminPage() {
               Thé <span className="italic text-gold-400">Noir</span>
             </span>
           </Link>
-          <p className="text-[11px] uppercase tracking-[0.28em] text-gold-400">
-            Admin management
-          </p>
+          <div className="flex items-center gap-7">
+            <p className="hidden text-[11px] uppercase tracking-[0.28em] text-gold-400 sm:block">
+              Admin management
+            </p>
+            <BackToHome />
+          </div>
         </div>
       </header>
 
