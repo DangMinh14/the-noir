@@ -1,18 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { FormError, SubmitButton, TextField } from "@/components/auth/fields";
 import { useAuth } from "@/lib/auth-context";
 import { ApiError } from "@/lib/api";
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginPageContent />
+    </Suspense>
+  );
+}
+
+function LoginPageContent() {
   const { login } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  // Only ever redirect to a same-site path, never an attacker-supplied URL.
+  const redirectParam = searchParams.get("redirect");
+  const redirectTo = redirectParam?.startsWith("/") ? redirectParam : "/";
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -21,7 +34,7 @@ export default function LoginPage() {
     setError(null);
     try {
       await login(String(form.get("email")), String(form.get("password")));
-      router.push("/");
+      router.push(redirectTo);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Something went wrong.");
       setBusy(false);

@@ -1,22 +1,45 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { Menu, ShoppingBag, X } from "lucide-react";
 import { EASE_LUXE } from "./reveal";
 import { MobileAuthLinks, UserMenu } from "./user-menu";
+import { CartDrawer } from "./cart-drawer";
+import { useCart } from "@/lib/cart-context";
 
 const LINKS = [
-  { href: "#collection", label: "Collection" },
+  { href: "/menu", label: "Menu" },
   { href: "#story", label: "Our Story" },
   { href: "#ritual", label: "The Ritual" },
   { href: "#maisons", label: "Maisons" },
 ];
 
+function CartButton({ onClick }: { onClick: () => void }) {
+  const { itemCount } = useCart();
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={`Open cart${itemCount > 0 ? `, ${itemCount} item${itemCount === 1 ? "" : "s"}` : ""}`}
+      className="relative flex h-11 w-11 cursor-pointer items-center justify-center text-cream transition-colors duration-200 hover:text-gold-300 md:h-auto md:w-auto"
+    >
+      <ShoppingBag size={19} aria-hidden />
+      {itemCount > 0 && (
+        <span className="absolute right-1.5 top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-gold-500 px-1 text-[10px] font-medium text-noir-950 md:right-0 md:top-0">
+          {itemCount}
+        </span>
+      )}
+    </button>
+  );
+}
+
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -66,38 +89,53 @@ export function Navbar() {
         <ul className="hidden items-center gap-9 md:flex">
           {LINKS.map((link) => (
             <li key={link.href}>
-              <a
-                href={link.href}
-                className="text-[13px] uppercase tracking-[0.18em] text-cream-muted transition-colors duration-200 hover:text-gold-300"
-              >
-                {link.label}
-              </a>
+              {link.href.startsWith("/") ? (
+                <Link
+                  href={link.href}
+                  className="text-[13px] uppercase tracking-[0.18em] text-cream-muted transition-colors duration-200 hover:text-gold-300"
+                >
+                  {link.label}
+                </Link>
+              ) : (
+                <a
+                  href={link.href}
+                  className="text-[13px] uppercase tracking-[0.18em] text-cream-muted transition-colors duration-200 hover:text-gold-300"
+                >
+                  {link.label}
+                </a>
+              )}
             </li>
           ))}
         </ul>
 
-        <div className="hidden items-center gap-7 md:flex">
+        <div className="hidden items-center gap-6 md:flex">
           <a
             href="#maisons"
             className="inline-flex items-center border border-gold-500/40 px-5 py-2.5 text-[12px] uppercase tracking-[0.2em] text-gold-300 transition-colors duration-300 hover:border-gold-400 hover:bg-gold-500/10"
           >
             Visit a Maison
           </a>
+          <CartButton onClick={() => setCartOpen(true)} />
           <UserMenu />
         </div>
 
-        {/* Mobile toggle — 44px touch target */}
-        <button
-          type="button"
-          aria-label={open ? "Close menu" : "Open menu"}
-          aria-expanded={open}
-          onClick={() => setOpen((v) => !v)}
-          className="flex h-11 w-11 cursor-pointer items-center justify-center text-cream md:hidden"
-        >
-          {open ? <X size={22} /> : <Menu size={22} />}
-        </button>
+        {/* Mobile: cart + menu toggle — both 44px touch targets */}
+        <div className="flex items-center gap-1 md:hidden">
+          <CartButton onClick={() => setCartOpen(true)} />
+          <button
+            type="button"
+            aria-label={open ? "Close menu" : "Open menu"}
+            aria-expanded={open}
+            onClick={() => setOpen((v) => !v)}
+            className="flex h-11 w-11 cursor-pointer items-center justify-center text-cream"
+          >
+            {open ? <X size={22} /> : <Menu size={22} />}
+          </button>
+        </div>
       </nav>
     </header>
+
+    <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
 
     {/* Mobile menu — sibling of the header: a backdrop-filter ancestor would
        turn into the containing block for this fixed overlay and crush it */}

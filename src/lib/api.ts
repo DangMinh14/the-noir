@@ -58,6 +58,32 @@ export type City = {
   updatedAt: string;
 };
 
+export type OrderStatus = "Pending" | "Preparing" | "Ready" | "Completed" | "Cancelled";
+
+export type OrderItem = {
+  productId: number | null;
+  productName: string;
+  unitPriceVnd: number;
+  quantity: number;
+  lineTotalVnd: number;
+};
+
+export type Order = {
+  id: number;
+  status: OrderStatus;
+  cityId: number;
+  cityName: string;
+  totalVnd: number;
+  createdAt: string;
+  updatedAt: string;
+  items: OrderItem[];
+};
+
+export type CreateOrderRequest = {
+  cityId: number;
+  items: { productId: number; quantity: number }[];
+};
+
 export class ApiError extends Error {
   status: number;
 

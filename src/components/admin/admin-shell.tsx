@@ -7,18 +7,26 @@ import {
   Coffee,
   Tags,
   MapPin,
+  ClipboardList,
   Users as UsersIcon,
 } from "lucide-react";
 import { BackToHome } from "@/components/back-to-home";
 import { useAuth } from "@/lib/auth-context";
 
-export type AdminTab = "overview" | "products" | "categories" | "cities" | "users";
+export type AdminTab =
+  | "overview"
+  | "products"
+  | "categories"
+  | "cities"
+  | "orders"
+  | "users";
 
 const NAV: { key: AdminTab; label: string; icon: React.ElementType }[] = [
   { key: "overview", label: "Overview", icon: LayoutDashboard },
   { key: "products", label: "Products", icon: Coffee },
   { key: "categories", label: "Categories", icon: Tags },
   { key: "cities", label: "Cities", icon: MapPin },
+  { key: "orders", label: "Orders", icon: ClipboardList },
   { key: "users", label: "Users", icon: UsersIcon },
 ];
 

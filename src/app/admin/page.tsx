@@ -9,9 +9,17 @@ import { OverviewPanel } from "./_panels/overview-panel";
 import { ProductsPanel } from "./_panels/products-panel";
 import { CategoriesPanel } from "./_panels/categories-panel";
 import { CitiesPanel } from "./_panels/cities-panel";
+import { OrdersPanel } from "./_panels/orders-panel";
 import { UsersPanel } from "./_panels/users-panel";
 
-const VALID_TABS: AdminTab[] = ["overview", "products", "categories", "cities", "users"];
+const VALID_TABS: AdminTab[] = [
+  "overview",
+  "products",
+  "categories",
+  "cities",
+  "orders",
+  "users",
+];
 
 export default function AdminPage() {
   return (
@@ -75,6 +83,7 @@ function AdminPageContent() {
       {tab === "products" && <ProductsPanel token={token} />}
       {tab === "categories" && <CategoriesPanel token={token} />}
       {tab === "cities" && <CitiesPanel token={token} />}
+      {tab === "orders" && <OrdersPanel token={token} />}
       {tab === "users" && <UsersPanel token={token} self={user} />}
     </AdminShell>
   );

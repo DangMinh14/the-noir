@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Inter } from "next/font/google";
 import { AuthProvider } from "@/lib/auth-context";
+import { CartProvider } from "@/lib/cart-context";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -47,7 +48,9 @@ export default function RootLayout({
       className={`${playfair.variable} ${inter.variable} scroll-smooth antialiased`}
     >
       <body className="bg-noir-950 text-cream font-sans selection:bg-gold-500/30 selection:text-cream">
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <CartProvider>{children}</CartProvider>
+        </AuthProvider>
       </body>
     </html>
   );

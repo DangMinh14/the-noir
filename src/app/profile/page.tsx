@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AuthShell } from "@/components/auth/auth-shell";
 import {
@@ -10,7 +10,101 @@ import {
   TextField,
 } from "@/components/auth/fields";
 import { useAuth } from "@/lib/auth-context";
-import { api, ApiError, type User } from "@/lib/api";
+import { api, ApiError, type Order, type User } from "@/lib/api";
+
+const STATUS_STYLES: Record<Order["status"], string> = {
+  Pending: "border-gold-500/30 text-gold-300",
+  Preparing: "border-gold-500/30 text-gold-300",
+  Ready: "border-emerald-400/30 text-emerald-300",
+  Completed: "border-cream-faint/30 text-cream-faint",
+  Cancelled: "border-red-400/30 text-red-300",
+};
+
+function OrderHistory({ token }: { token: string | null }) {
+  const [orders, setOrders] = useState<Order[] | null>(null);
+  const [expanded, setExpanded] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(() => {
+    api<Order[]>("/api/orders/mine", { token })
+      .then(setOrders)
+      .catch((err) => setError(err instanceof ApiError ? err.message : "Something went wrong."));
+  }, [token]);
+  useEffect(load, [load]);
+
+  return (
+    <>
+      <h2 className="mb-5 mt-10 border-t border-gold-500/10 pt-8 font-serif text-xl text-cream">
+        Order history
+      </h2>
+      <FormError message={error} />
+
+      {orders === null ? (
+        <p className="text-sm text-cream-faint">Loading...</p>
+      ) : orders.length === 0 ? (
+        <p className="text-sm text-cream-faint">
+          No orders yet. Your next visit to the menu starts one.
+        </p>
+      ) : (
+        <ul className="flex flex-col gap-3">
+          {orders.map((order) => {
+            const isOpen = expanded === order.id;
+            return (
+              <li key={order.id} className="border border-gold-500/10">
+                <button
+                  type="button"
+                  onClick={() => setExpanded(isOpen ? null : order.id)}
+                  className="flex w-full cursor-pointer flex-wrap items-center justify-between gap-3 px-5 py-4 text-left"
+                >
+                  <div>
+                    <p className="text-sm text-cream">
+                      Order #{order.id} · {order.cityName}
+                    </p>
+                    <p className="mt-0.5 text-xs text-cream-faint">
+                      {new Date(order.createdAt).toLocaleDateString("en-GB", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span
+                      className={`border px-3 py-1 text-[10px] uppercase tracking-[0.18em] ${STATUS_STYLES[order.status]}`}
+                    >
+                      {order.status}
+                    </span>
+                    <span className="tabular-nums text-gold-400">
+                      {order.totalVnd.toLocaleString("vi-VN")}₫
+                    </span>
+                  </div>
+                </button>
+                {isOpen && (
+                  <ul className="border-t border-gold-500/10 px-5 py-4">
+                    {order.items.map((item, i) => (
+                      <li
+                        key={i}
+                        className="flex items-baseline justify-between gap-3 py-1.5 text-sm text-cream-muted"
+                      >
+                        <span>
+                          {item.productName}{" "}
+                          <span className="text-cream-faint">x{item.quantity}</span>
+                        </span>
+                        <span className="tabular-nums">
+                          {item.lineTotalVnd.toLocaleString("vi-VN")}₫
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </>
+  );
+}
 
 export default function ProfilePage() {
   const { user, token, loading, setUser } = useAuth();
@@ -158,6 +252,8 @@ export default function ProfilePage() {
         <FormNotice message={pwNotice} />
         <SubmitButton busy={pwBusy}>Update password</SubmitButton>
       </form>
+
+      <OrderHistory token={token} />
     </AuthShell>
   );
 }
