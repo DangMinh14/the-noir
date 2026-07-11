@@ -13,9 +13,20 @@ import {
   thClass,
 } from "@/components/admin/table-bits";
 import { Pagination } from "@/components/admin/pagination";
+import {
+  ImageUploadField,
+  type ImageSelection,
+} from "@/components/admin/image-upload-field";
 import { FormError, SubmitButton, TextField } from "@/components/auth/fields";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
-import { api, type Category, type PagedResult } from "@/lib/api";
+import {
+  api,
+  resolveImageUrl,
+  uploadImage,
+  FALLBACK_CATEGORY_IMAGE,
+  type Category,
+  type PagedResult,
+} from "@/lib/api";
 
 const PAGE_SIZE = 10;
 
@@ -25,6 +36,9 @@ export function CategoriesPanel({ token }: { token: string | null }) {
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebouncedValue(search);
   const [editing, setEditing] = useState<Category | "new" | null>(null);
+  const [imageSelection, setImageSelection] = useState<ImageSelection>({
+    kind: "unchanged",
+  });
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -39,12 +53,34 @@ export function CategoriesPanel({ token }: { token: string | null }) {
 
   useEffect(() => setPage(1), [debouncedSearch]);
 
+  function openForm(category: Category | "new") {
+    setEditing(category);
+    setImageSelection({ kind: "unchanged" });
+    setError(null);
+  }
+
   async function save(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const body = { name: String(new FormData(e.currentTarget).get("name")) };
+    const form = new FormData(e.currentTarget);
+    const name = String(form.get("name"));
+    const allowsToppings = form.get("allowsToppings") === "on";
+
     setBusy(true);
     setError(null);
     try {
+      let imageUrl: string;
+      if (imageSelection.kind === "file") {
+        imageUrl = await uploadImage(imageSelection.file, token);
+      } else if (imageSelection.kind === "url") {
+        imageUrl = imageSelection.url;
+      } else if (imageSelection.kind === "none") {
+        imageUrl = ""; // blank -> frontend falls back to the stock photo
+      } else {
+        imageUrl = editing && editing !== "new" ? editing.imageUrl : "";
+      }
+
+      const body = { name, imageUrl, allowsToppings };
+
       if (editing === "new") {
         await api("/api/categories", { method: "POST", token, body });
       } else if (editing) {
@@ -78,7 +114,7 @@ export function CategoriesPanel({ token }: { token: string | null }) {
         title="Categories"
         description="Group products on the menu. A category with products can't be deleted until they're moved."
         action={
-          <PrimaryButton onClick={() => setEditing("new")}>
+          <PrimaryButton onClick={() => openForm("new")}>
             New category
           </PrimaryButton>
         }
@@ -88,28 +124,46 @@ export function CategoriesPanel({ token }: { token: string | null }) {
       {editing && (
         <form
           onSubmit={save}
-          className="mb-8 mt-4 flex flex-wrap items-end gap-5 border border-gold-500/15 bg-noir-900/60 p-6"
+          className="mb-8 mt-4 flex flex-col gap-5 border border-gold-500/15 bg-noir-900/60 p-6"
         >
-          <div className="min-w-48 flex-1">
-            <TextField
-              label="Name"
-              name="name"
-              defaultValue={current?.name}
-              placeholder="e.g. Milk Tea"
-              required
-              maxLength={50}
-            />
+          <ImageUploadField
+            currentImageUrl={current?.imageUrl}
+            onChange={setImageSelection}
+            label="Category photo"
+            fallbackImage={FALLBACK_CATEGORY_IMAGE}
+            helperText="No photo yet? Leave this empty and a stock photo is used until you upload one."
+          />
+          <div className="flex flex-wrap items-end gap-5">
+            <div className="min-w-48 flex-1">
+              <TextField
+                label="Name"
+                name="name"
+                defaultValue={current?.name}
+                placeholder="e.g. Milk Tea"
+                required
+                maxLength={50}
+              />
+            </div>
+            <label className="flex items-center gap-2.5 pb-3 text-sm text-cream-muted">
+              <input
+                type="checkbox"
+                name="allowsToppings"
+                defaultChecked={current?.allowsToppings ?? true}
+                className="h-4 w-4 accent-gold-500"
+              />
+              Allows toppings
+            </label>
+            <SubmitButton busy={busy}>
+              {editing === "new" ? "Create category" : "Save changes"}
+            </SubmitButton>
+            <button
+              type="button"
+              onClick={() => setEditing(null)}
+              className="cursor-pointer px-2 py-3 text-[12px] uppercase tracking-[0.2em] text-cream-faint hover:text-cream"
+            >
+              Cancel
+            </button>
           </div>
-          <SubmitButton busy={busy}>
-            {editing === "new" ? "Create category" : "Save changes"}
-          </SubmitButton>
-          <button
-            type="button"
-            onClick={() => setEditing(null)}
-            className="cursor-pointer px-2 py-3 text-[12px] uppercase tracking-[0.2em] text-cream-faint hover:text-cream"
-          >
-            Cancel
-          </button>
         </form>
       )}
 
@@ -129,6 +183,7 @@ export function CategoriesPanel({ token }: { token: string | null }) {
             <table className="w-full min-w-125">
               <thead className="border-b border-gold-500/10 bg-noir-900/60">
                 <tr>
+                  <th className={thClass}></th>
                   <th className={thClass}>Name</th>
                   <th className={thClass}>Products</th>
                   <th className={thClass}>Created</th>
@@ -138,12 +193,20 @@ export function CategoriesPanel({ token }: { token: string | null }) {
               <tbody>
                 {result.items.map((c) => (
                   <tr key={c.id} className="border-b border-gold-500/5 last:border-0">
+                    <td className="py-2 pl-4">
+                      {/* eslint-disable-next-line @next/next/no-img-element -- thumbnail from user uploads, not a static asset */}
+                      <img
+                        src={resolveImageUrl(c.imageUrl, FALLBACK_CATEGORY_IMAGE)}
+                        alt=""
+                        className="h-10 w-10 object-cover"
+                      />
+                    </td>
                     <td className={`${tdClass} text-cream`}>{c.name}</td>
                     <td className={tdClass}>{c.productCount}</td>
                     <td className={tdClass}>{formatDate(c.createdAt)}</td>
                     <td className={`${tdClass} text-right whitespace-nowrap`}>
                       <span className="inline-flex gap-4">
-                        <RowButton onClick={() => setEditing(c)}>Edit</RowButton>
+                        <RowButton onClick={() => openForm(c)}>Edit</RowButton>
                         <RowButton
                           danger
                           disabled={c.productCount > 0}

@@ -1,10 +1,11 @@
 import Image from "next/image";
+import { SectionLink } from "./section-link";
 
 const NAV = [
-  { href: "#collection", label: "Collection" },
-  { href: "#story", label: "Our Story" },
-  { href: "#ritual", label: "The Ritual" },
-  { href: "#maisons", label: "Maisons" },
+  { id: "collection", label: "Collection" },
+  { id: "story", label: "Our Story" },
+  { id: "ritual", label: "The Ritual" },
+  { id: "maisons", label: "Maisons" },
 ];
 
 const SOCIAL = [
@@ -43,12 +44,12 @@ export function Footer() {
           <ul className="mt-5 space-y-3">
             {NAV.map((link) => (
               <li key={link.label}>
-                <a
-                  href={link.href}
+                <SectionLink
+                  id={link.id}
                   className="text-sm text-cream-muted transition-colors duration-200 hover:text-gold-300"
                 >
                   {link.label}
-                </a>
+                </SectionLink>
               </li>
             ))}
           </ul>

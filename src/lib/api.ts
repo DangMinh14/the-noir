@@ -6,11 +6,15 @@ export const API_URL =
 // not a static site asset, so it has to go through API_URL like an upload.
 export const FALLBACK_PRODUCT_IMAGE = `${API_URL}/branding/product-fallback.jpg`;
 
+// A category with no photo of its own yet resolves to this, kept as a
+// distinct asset from the product fallback so the two can evolve independently.
+export const FALLBACK_CATEGORY_IMAGE = `${API_URL}/branding/category-fallback.jpg`;
+
 export type User = {
   id: number;
   email: string;
   displayName: string;
-  role: "User" | "Admin";
+  role: "User" | "Admin" | "Staff";
   createdAt: string;
   updatedAt: string;
 };
@@ -36,6 +40,9 @@ export type Category = {
   id: number;
   name: string;
   productCount: number;
+  imageUrl: string;
+  imageAlt: string;
+  allowsToppings: boolean;
   createdAt: string;
   updatedAt: string;
 };
@@ -44,11 +51,21 @@ export type Product = {
   id: number;
   name: string;
   description: string;
+  descriptionHtml: string;
   priceVnd: number;
   categoryId: number;
   categoryName: string;
+  categoryAllowsToppings: boolean;
   imageUrl: string;
   imageAlt: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type Topping = {
+  id: number;
+  name: string;
+  priceVnd: number;
   createdAt: string;
   updatedAt: string;
 };
@@ -66,12 +83,25 @@ export type City = {
 
 export type OrderStatus = "Pending" | "Preparing" | "Ready" | "Completed" | "Cancelled";
 
+export type OrderItemTopping = {
+  toppingId: number | null;
+  name: string;
+  priceVnd: number;
+};
+
 export type OrderItem = {
   productId: number | null;
   productName: string;
   unitPriceVnd: number;
   quantity: number;
   lineTotalVnd: number;
+  iceOption: string | null;
+  temperature: string | null;
+  sugarLevel: string | null;
+  size: string | null;
+  sizeSurchargeVnd: number;
+  note: string | null;
+  toppings: OrderItemTopping[];
 };
 
 export type Order = {
@@ -82,12 +112,47 @@ export type Order = {
   totalVnd: number;
   createdAt: string;
   updatedAt: string;
+  expiresAt: string;
+  autoCancelled: boolean;
+  // Falls back to the account's display name server-side, so this is only
+  // null for the rare guest order placed with an empty name.
+  customerName: string | null;
+  // False for guest checkouts: no account to reply from, so chat is hidden.
+  hasAccount: boolean;
+  preparingAt: string | null;
+  readyAt: string | null;
+  completedAt: string | null;
+  cancelledAt: string | null;
   items: OrderItem[];
+};
+
+export type OrderMessageSenderRole = "Staff" | "Customer";
+
+export type OrderMessage = {
+  id: number;
+  senderRole: OrderMessageSenderRole;
+  body: string;
+  createdAt: string;
+};
+
+export type UnseenOrdersSummary = {
+  newOrders: number;
+  autoCancelled: number;
 };
 
 export type CreateOrderRequest = {
   cityId: number;
-  items: { productId: number; quantity: number }[];
+  items: {
+    productId: number;
+    quantity: number;
+    iceOption?: string;
+    temperature?: string;
+    sugarLevel?: string;
+    size?: string;
+    note?: string;
+    toppingIds?: number[];
+  }[];
+  customerName?: string;
 };
 
 export type DashboardStats = {
@@ -149,14 +214,14 @@ export async function api<T>(path: string, opts: ApiOptions = {}): Promise<T> {
   return data as T;
 }
 
-// Resolves a product's ImageUrl (already absolute for Unsplash, or a
+// Resolves an ImageUrl (already absolute for Unsplash, or a
 // server-relative /uploads/... path) to something an <img> can load.
-export function resolveImageUrl(url: string): string {
-  if (!url) return FALLBACK_PRODUCT_IMAGE;
+export function resolveImageUrl(url: string, fallback: string = FALLBACK_PRODUCT_IMAGE): string {
+  if (!url) return fallback;
   return url.startsWith("/") ? `${API_URL}${url}` : url;
 }
 
-export async function uploadProductImage(
+export async function uploadImage(
   file: File,
   token: string | null,
 ): Promise<string> {

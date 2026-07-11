@@ -17,6 +17,7 @@ import {
   ImageUploadField,
   type ImageSelection,
 } from "@/components/admin/image-upload-field";
+import { RichTextEditor } from "@/components/admin/rich-text-editor";
 import {
   FormError,
   SelectField,
@@ -24,10 +25,12 @@ import {
   TextField,
 } from "@/components/auth/fields";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
+import { sanitizeDescriptionHtml } from "@/lib/sanitize-html";
 import {
   api,
   resolveImageUrl,
-  uploadProductImage,
+  uploadImage,
+  FALLBACK_PRODUCT_IMAGE,
   type Category,
   type PagedResult,
   type Product,
@@ -46,6 +49,7 @@ export function ProductsPanel({ token }: { token: string | null }) {
     kind: "unchanged",
   });
   const [nameDraft, setNameDraft] = useState("");
+  const [descriptionHtmlDraft, setDescriptionHtmlDraft] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -71,6 +75,7 @@ export function ProductsPanel({ token }: { token: string | null }) {
     setEditing(product);
     setImageSelection({ kind: "unchanged" });
     setNameDraft(product === "new" ? "" : product.name);
+    setDescriptionHtmlDraft(product === "new" ? "" : product.descriptionHtml);
     setError(null);
   }
 
@@ -85,7 +90,7 @@ export function ProductsPanel({ token }: { token: string | null }) {
     try {
       let imageUrl: string;
       if (imageSelection.kind === "file") {
-        imageUrl = await uploadProductImage(imageSelection.file, token);
+        imageUrl = await uploadImage(imageSelection.file, token);
       } else if (imageSelection.kind === "url") {
         imageUrl = imageSelection.url;
       } else if (imageSelection.kind === "none") {
@@ -99,6 +104,7 @@ export function ProductsPanel({ token }: { token: string | null }) {
       const body = {
         name,
         description: String(f.get("description")),
+        descriptionHtml: sanitizeDescriptionHtml(descriptionHtmlDraft),
         priceVnd: Number(f.get("priceVnd")),
         categoryId: Number(f.get("categoryId")),
         imageUrl,
@@ -152,6 +158,9 @@ export function ProductsPanel({ token }: { token: string | null }) {
           <ImageUploadField
             currentImageUrl={current?.imageUrl}
             onChange={setImageSelection}
+            label="Product photo"
+            fallbackImage={FALLBACK_PRODUCT_IMAGE}
+            helperText="No photo yet? Leave this empty and a stock tea photo is used until you upload one."
           />
 
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
@@ -183,6 +192,14 @@ export function ProductsPanel({ token }: { token: string | null }) {
                 defaultValue={current?.description}
                 required
                 maxLength={500}
+                helperText="Short teaser shown on menu cards and search. Keep it to one line."
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <RichTextEditor
+                value={descriptionHtmlDraft}
+                onChange={setDescriptionHtmlDraft}
+                token={token}
               />
             </div>
             <TextField

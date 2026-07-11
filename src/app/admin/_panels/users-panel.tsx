@@ -109,6 +109,7 @@ export function UsersPanel({ token, self }: { token: string | null; self: User }
                           className="cursor-pointer border border-gold-500/20 bg-noir-950 px-3 py-1.5 text-sm text-cream disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           <option value="User">User</option>
+                          <option value="Staff">Staff</option>
                           <option value="Admin">Admin</option>
                         </select>
                       </td>

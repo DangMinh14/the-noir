@@ -95,10 +95,10 @@ export default function ForgotPasswordPage() {
             code to your inbox.
           </p>
           <TextField
-            label="Email"
+            label="Email or username"
             name="email"
-            type="email"
-            autoComplete="email"
+            type="text"
+            autoComplete="username"
             placeholder="you@example.com"
             required
           />

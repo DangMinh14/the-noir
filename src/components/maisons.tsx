@@ -45,7 +45,11 @@ export function Maisons() {
                       {city.count}
                     </span>
                     <span className="flex h-11 w-11 items-center justify-center rounded-full border border-gold-500/30 text-gold-400 transition-all duration-300 group-hover:border-gold-400 group-hover:bg-gold-500 group-hover:text-noir-950">
-                      <ArrowUpRight size={18} aria-hidden />
+                      <ArrowUpRight
+                        size={18}
+                        aria-hidden
+                        className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                      />
                     </span>
                   </div>
                 </a>

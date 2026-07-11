@@ -9,6 +9,7 @@ import {
   useTransform,
 } from "framer-motion";
 import { EASE_LUXE } from "./reveal";
+import { Magnetic } from "./magnetic";
 
 const container = {
   hidden: {},
@@ -77,10 +78,10 @@ export function Hero() {
       <div className="absolute inset-0 bg-gradient-to-r from-noir-950/70 via-transparent to-transparent" />
       <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-noir-950/80 to-transparent" />
 
-      {/* Ambient gold glow */}
+      {/* Ambient gold glow, breathing slowly */}
       <div
         aria-hidden
-        className="absolute -left-32 top-1/4 h-96 w-96 rounded-full bg-gold-500/8 blur-3xl"
+        className="absolute -left-32 top-1/4 h-96 w-96 animate-glow rounded-full bg-gold-500/8 blur-3xl"
       />
 
       <motion.div
@@ -93,7 +94,12 @@ export function Hero() {
             className="mb-6 flex items-center gap-4 text-[12px] uppercase tracking-[0.32em] text-gold-400"
           >
             <span aria-hidden className="h-px w-12 bg-gold-500/60" />
-            Maison de thé · Saigon · Est. 2016
+            {/* Full line wraps awkwardly under ~380px at this tracking; drop
+               the year on small screens rather than let it break mid-word. */}
+            <span className="sm:hidden">Maison de thé · Saigon</span>
+            <span className="hidden sm:inline">
+              Maison de thé · Saigon · Est. 2016
+            </span>
           </motion.p>
 
           <motion.h1
@@ -114,19 +120,21 @@ export function Hero() {
             seriously and enjoyed slowly.
           </motion.p>
 
-          <motion.div variants={item} className="mt-11 flex flex-wrap gap-4">
-            <a
+          {/* Full-width stacked on mobile (clean thumb-width targets) instead
+             of wrapping mid-row once the two labels don't fit side by side. */}
+          <motion.div variants={item} className="mt-11 flex flex-col gap-3 sm:flex-row sm:gap-4">
+            <Magnetic
               href="#collection"
-              className="inline-flex items-center bg-gold-500 px-8 py-4 text-[13px] font-medium uppercase tracking-[0.2em] text-noir-950 transition-colors duration-300 hover:bg-gold-400"
+              className="inline-flex items-center justify-center bg-gold-500 px-8 py-4 text-[13px] font-medium uppercase tracking-[0.2em] text-noir-950 transition-colors duration-300 hover:bg-gold-400 sm:justify-start"
             >
               Explore the Collection
-            </a>
-            <a
+            </Magnetic>
+            <Magnetic
               href="#story"
-              className="inline-flex items-center border border-cream/25 px-8 py-4 text-[13px] uppercase tracking-[0.2em] text-cream transition-colors duration-300 hover:border-gold-400 hover:text-gold-300"
+              className="inline-flex items-center justify-center border border-cream/25 px-8 py-4 text-[13px] uppercase tracking-[0.2em] text-cream transition-colors duration-300 hover:border-gold-400 hover:text-gold-300 sm:justify-start"
             >
               Our Story
-            </a>
+            </Magnetic>
           </motion.div>
         </motion.div>
       </motion.div>

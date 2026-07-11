@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { ImageOff, TriangleAlert, Upload } from "lucide-react";
-import { FALLBACK_PRODUCT_IMAGE, resolveImageUrl } from "@/lib/api";
+import { resolveImageUrl } from "@/lib/api";
 
 // Common mistake: pasting a photo-page link (unsplash.com/photos/slug-id)
 // instead of the direct image link (images.unsplash.com/photo-id). The
@@ -20,14 +20,21 @@ export type ImageSelection =
   | { kind: "url"; url: string }
   | { kind: "none" }; // fall back to the stock photo
 
-// Product image picker: drag/pick a local file (with instant preview),
-// paste an external URL instead, or leave it for the stock-photo fallback.
+// Generic image picker: drag/pick a local file (with instant preview), paste
+// an external URL instead, or leave it for a stock-photo fallback. Reused
+// for both products and categories via the fallbackImage/label/helperText props.
 export function ImageUploadField({
   currentImageUrl,
   onChange,
+  label = "Photo",
+  fallbackImage,
+  helperText = "No photo yet? Leave this empty and a stock photo is used until you upload one.",
 }: {
   currentImageUrl?: string;
   onChange: (selection: ImageSelection) => void;
+  label?: string;
+  fallbackImage: string;
+  helperText?: string;
 }) {
   const [mode, setMode] = useState<"upload" | "url">("upload");
   const [preview, setPreview] = useState<string | null>(
@@ -58,19 +65,19 @@ export function ImageUploadField({
   return (
     <div>
       <span className="mb-2 block text-[11px] uppercase tracking-[0.22em] text-cream-muted">
-        Product photo
+        {label}
       </span>
 
       <div className="flex flex-col gap-4 sm:flex-row">
         <div className="relative h-32 w-32 shrink-0 overflow-hidden border border-gold-500/20 bg-noir-950">
           {/* eslint-disable-next-line @next/next/no-img-element -- local blob/external previews, not an optimizable asset */}
           <img
-            src={preview || FALLBACK_PRODUCT_IMAGE}
+            src={preview || fallbackImage}
             alt=""
             className="h-full w-full object-cover"
             onError={(e) => {
-              if (e.currentTarget.src !== FALLBACK_PRODUCT_IMAGE) {
-                setPreview(FALLBACK_PRODUCT_IMAGE);
+              if (e.currentTarget.src !== fallbackImage) {
+                setPreview(fallbackImage);
               }
             }}
           />
@@ -173,8 +180,7 @@ export function ImageUploadField({
           )}
 
           <p className="mt-2.5 text-[11px] leading-relaxed text-cream-faint">
-            No photo yet? Leave this empty and a stock tea photo is used until
-            you upload one.
+            {helperText}
           </p>
         </div>
       </div>

@@ -52,10 +52,10 @@ function LoginPageContent() {
     >
       <form onSubmit={onSubmit} className="flex flex-col gap-5">
         <TextField
-          label="Email"
+          label="Email or username"
           name="email"
-          type="email"
-          autoComplete="email"
+          type="text"
+          autoComplete="username"
           placeholder="you@example.com"
           required
         />

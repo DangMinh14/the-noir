@@ -11,7 +11,7 @@ import {
 import { Reveal } from "./reveal";
 
 const STATS = [
-  { value: "03", label: "Tea estates, one valley" },
+  { value: "03", label: "Tea and coffee plots, one valley" },
   { value: "1,200 m", label: "Altitude of our gardens" },
   { value: "18", label: "Maisons across Vietnam" },
 ];
@@ -24,6 +24,9 @@ export function Story() {
     offset: ["start end", "end start"],
   });
   const imageY = useTransform(scrollYProgress, [0, 1], ["-6%", "6%"]);
+  // Moves the opposite direction and a bit further, so the inset photo
+  // reads as its own layer instead of drifting in lockstep with the first.
+  const image2Y = useTransform(scrollYProgress, [0, 1], ["5%", "-9%"]);
 
   return (
     <section
@@ -38,25 +41,46 @@ export function Story() {
       />
 
       <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-16 px-5 sm:px-8 lg:grid-cols-2 lg:gap-24">
-        {/* Framed parallax image */}
-        <Reveal className="relative">
-          <div
-            aria-hidden
-            className="absolute -left-4 -top-4 hidden h-full w-full border border-gold-500/30 sm:block"
-          />
-          <div className="relative aspect-[4/5] overflow-hidden bg-noir-800">
-            <motion.div
-              style={reduceMotion ? undefined : { y: imageY }}
-              className="absolute inset-0 scale-[1.15]"
-            >
-              <Image
-                src="https://images.unsplash.com/photo-1447933601403-0c6688de566e?q=80&w=1400&auto=format&fit=crop"
-                alt="Roasted beans and dark leaves scattered across a wooden surface"
-                fill
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                className="object-cover"
-              />
-            </motion.div>
+        {/* Two framed, independently-parallaxed photos: the tea terraces as
+           the anchor image, the coffee grove as a smaller inset tucked over
+           its bottom corner, like two prints from the same field visit. */}
+        <Reveal>
+          <div className="relative">
+            <div
+              aria-hidden
+              className="absolute -left-4 -top-4 hidden h-full w-full border border-gold-500/30 sm:block"
+            />
+            <div className="relative aspect-[4/5] overflow-hidden bg-noir-800">
+              <motion.div
+                style={reduceMotion ? undefined : { y: imageY }}
+                className="absolute inset-0 scale-[1.15]"
+              >
+                <Image
+                  src="/images/story-tea-garden.jpg"
+                  alt="Terraced tea rows curving down a fog-covered hillside in the Lâm Đồng highlands, a wooden Thé Noir trail marker in the foreground"
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  className="object-cover"
+                />
+              </motion.div>
+            </div>
+          </div>
+
+          <div className="relative -mt-16 ml-auto w-[44%] sm:-mt-20">
+            <div className="relative aspect-[4/5] overflow-hidden border-4 border-noir-900 bg-noir-800 shadow-2xl shadow-black/50 ring-1 ring-gold-500/15">
+              <motion.div
+                style={reduceMotion ? undefined : { y: image2Y }}
+                className="absolute inset-0 scale-[1.15]"
+              >
+                <Image
+                  src="/images/story-coffee-garden.jpg"
+                  alt="Ripe coffee cherries on the branch beside a Thé Noir trail marker, rows of coffee trees on the neighbouring slope"
+                  fill
+                  sizes="(max-width: 1024px) 44vw, 22vw"
+                  className="object-cover"
+                />
+              </motion.div>
+            </div>
           </div>
         </Reveal>
 
@@ -75,15 +99,17 @@ export function Story() {
 
           <Reveal delay={0.1}>
             <p className="mt-8 leading-relaxed text-cream-muted">
-              Thé Noir began with a single hillside in the Lâm Đồng highlands:
-              three hectares of old tea bushes wrapped in morning fog. We
-              learned to wither, roll and oxidise the leaf the slow way, then
-              borrowed the discipline of the French salon de thé to serve it.
+              Thé Noir began with two plots on neighbouring slopes in the Lâm
+              Đồng highlands: tea terraces cut into one hillside, coffee trees
+              planted on the next, ten minutes apart on foot. Same fog, same
+              red soil, same hour of picking before the sun burns it off.
             </p>
             <p className="mt-5 leading-relaxed text-cream-muted">
-              A decade later, the promise is unchanged: every cup, from a
-              ceremonial oolong to a street-sweet milk tea, starts with a leaf
-              we can trace back to its row on the hill.
+              We learned to wither, roll and oxidise the tea leaf the slow
+              way, and to pick the coffee cherries by hand, one row at a time.
+              A decade later, the promise is unchanged: every cup, tea or phin
+              coffee, starts with a plant we can trace back to its row on the
+              hill.
             </p>
           </Reveal>
 

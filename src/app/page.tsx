@@ -8,10 +8,12 @@ import { Maisons } from "@/components/maisons";
 import { FinalCta } from "@/components/cta";
 import { Footer } from "@/components/footer";
 import { Preloader } from "@/components/preloader";
+import { PendingScrollConsumer } from "@/components/section-link";
 
 export default function Home() {
   return (
     <div className="grain">
+      <PendingScrollConsumer />
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[110] focus:bg-gold-500 focus:px-4 focus:py-2 focus:text-noir-950"

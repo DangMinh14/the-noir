@@ -36,13 +36,14 @@
   --color-cream-muted: var(--cream-muted);
   --color-cream-faint: var(--cream-faint);
 
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
   --font-serif: var(--font-playfair), ui-serif, Georgia, serif;
 
   --ease-luxe: cubic-bezier(0.16, 1, 0.3, 1);
 
   --animate-marquee: marquee 32s linear infinite;
   --animate-steam: steam 6s ease-in-out infinite;
+  --animate-glow: glow 8s ease-in-out infinite;
 
   @keyframes marquee {
     from {
@@ -62,6 +63,19 @@
     50% {
       transform: translateY(-14px) scaleX(1.08);
       opacity: 0.12;
+    }
+  }
+
+  /* Ambient background glows breathe slowly instead of sitting static */
+  @keyframes glow {
+    0%,
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.55;
+      transform: scale(1.18);
     }
   }
 }
@@ -105,6 +119,83 @@ body {
   outline: 2px solid var(--gold-400);
   outline-offset: 3px;
   border-radius: 2px;
+}
+
+/* Horizontal chip/carousel strips on mobile: scrollable, no visible scrollbar */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Rendered/edited rich-text product descriptions (rich-text-editor.tsx and
+   the product detail page share this so the editor previews exactly what
+   the page will show). No @tailwindcss/typography plugin installed, so
+   these are hand-written rather than a generic .prose reset. */
+.rich-text p {
+  margin-bottom: 1em;
+  line-height: 1.7;
+}
+.rich-text p:last-child {
+  margin-bottom: 0;
+}
+.rich-text h2,
+.rich-text h3 {
+  font-family: var(--font-serif);
+  color: var(--cream);
+  margin-top: 1.2em;
+  margin-bottom: 0.5em;
+  line-height: 1.3;
+}
+.rich-text h2 {
+  font-size: 1.5em;
+}
+.rich-text h3 {
+  font-size: 1.2em;
+}
+.rich-text h2:first-child,
+.rich-text h3:first-child {
+  margin-top: 0;
+}
+.rich-text ul,
+.rich-text ol {
+  margin: 0 0 1em 1.25em;
+  line-height: 1.7;
+}
+.rich-text ul {
+  list-style: disc;
+}
+.rich-text ol {
+  list-style: decimal;
+}
+.rich-text li::marker {
+  color: var(--gold-500);
+}
+.rich-text a {
+  color: var(--gold-400);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.rich-text a:hover {
+  color: var(--gold-300);
+}
+.rich-text blockquote {
+  border-left: 2px solid var(--gold-500);
+  padding-left: 1em;
+  margin: 1em 0;
+  color: var(--cream-muted);
+  font-style: italic;
+}
+.rich-text img {
+  max-width: 100%;
+  height: auto;
+  margin: 1em 0;
+}
+.rich-text strong,
+.rich-text b {
+  color: var(--cream);
+  font-weight: 600;
 }
 
 @media (prefers-reduced-motion: reduce) {

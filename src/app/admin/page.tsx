@@ -8,6 +8,7 @@ import { AdminShell, type AdminTab } from "@/components/admin/admin-shell";
 import { OverviewPanel } from "./_panels/overview-panel";
 import { ProductsPanel } from "./_panels/products-panel";
 import { CategoriesPanel } from "./_panels/categories-panel";
+import { ToppingsPanel } from "./_panels/toppings-panel";
 import { CitiesPanel } from "./_panels/cities-panel";
 import { OrdersPanel } from "./_panels/orders-panel";
 import { UsersPanel } from "./_panels/users-panel";
@@ -16,6 +17,7 @@ const VALID_TABS: AdminTab[] = [
   "overview",
   "products",
   "categories",
+  "toppings",
   "cities",
   "orders",
   "users",
@@ -61,7 +63,7 @@ function AdminPageContent() {
     return (
       <main className="flex min-h-dvh flex-col items-center justify-center gap-6 bg-noir-950 px-5 text-center">
         <h1 className="font-serif text-3xl text-cream">
-          This room is <em className="italic text-gold-300">staff only</em>
+          This room is <em className="italic text-gold-300">admins only</em>
         </h1>
         <p className="max-w-sm text-sm text-cream-muted">
           Your account does not have admin access. If it should, ask another
@@ -82,6 +84,7 @@ function AdminPageContent() {
       {tab === "overview" && <OverviewPanel token={token} />}
       {tab === "products" && <ProductsPanel token={token} />}
       {tab === "categories" && <CategoriesPanel token={token} />}
+      {tab === "toppings" && <ToppingsPanel token={token} />}
       {tab === "cities" && <CitiesPanel token={token} />}
       {tab === "orders" && <OrdersPanel token={token} />}
       {tab === "users" && <UsersPanel token={token} self={user} />}

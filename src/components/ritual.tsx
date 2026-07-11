@@ -48,7 +48,7 @@ export function Ritual() {
                   aria-hidden
                   size={26}
                   strokeWidth={1.5}
-                  className="text-gold-400"
+                  className="text-gold-400 transition-transform duration-500 ease-out group-hover:-translate-y-1 group-hover:rotate-6"
                 />
               </div>
               <h3 className="mt-6 font-serif text-2xl text-cream">

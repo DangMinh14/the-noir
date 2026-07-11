@@ -15,7 +15,7 @@ export function Marquee() {
       {ITEMS.map((item) => (
         <li
           key={item}
-          className="flex items-center gap-10 pr-10 font-serif text-lg italic text-gold-400/80 sm:text-xl"
+          className="flex items-center gap-10 pr-10 font-serif text-lg italic text-gold-400/80 transition-colors duration-300 hover:text-gold-300 sm:text-xl"
         >
           {item}
           <span aria-hidden className="text-[9px] not-italic text-gold-600">
@@ -28,7 +28,7 @@ export function Marquee() {
 
   return (
     <div className="overflow-hidden border-y border-gold-500/15 bg-noir-900 py-5">
-      <div className="flex w-max animate-marquee motion-reduce:animate-none">
+      <div className="flex w-max animate-marquee motion-reduce:animate-none [animation-play-state:running] hover:[animation-play-state:paused]">
         {row(false)}
         {row(true)}
       </div>

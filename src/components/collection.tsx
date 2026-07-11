@@ -3,16 +3,16 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Reveal } from "./reveal";
-import { ProductCard } from "./product-card";
-import { api, type Product } from "@/lib/api";
+import { CategoryCard } from "./category-card";
+import { api, type Category } from "@/lib/api";
 
 export function Collection() {
-  const [products, setProducts] = useState<Product[] | null>(null);
+  const [categories, setCategories] = useState<Category[] | null>(null);
 
   useEffect(() => {
-    api<Product[]>("/api/products")
-      .then((all) => setProducts(all.slice(0, 4)))
-      .catch(() => setProducts([]));
+    api<Category[]>("/api/categories")
+      .then(setCategories)
+      .catch(() => setCategories([]));
   }, []);
 
   return (
@@ -27,16 +27,24 @@ export function Collection() {
             Signatures of <em className="italic text-gold-300">the maison</em>
           </h2>
           <p className="max-w-sm text-sm leading-relaxed text-cream-muted">
-            Four pillars of the menu: tea, milk tea, coffee and matcha, each
-            built on leaves and beans we source ourselves.
+            Every line on the menu, built on leaves, beans and fruit we
+            source ourselves.
           </p>
         </div>
       </Reveal>
 
-      {products && products.length > 0 && (
-        <div className="mt-16 grid grid-cols-1 gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-4">
-          {products.map((product, i) => (
-            <ProductCard key={product.id} product={product} index={i} />
+      {categories && categories.length > 0 && (
+        // Mobile: horizontal snap carousel with the next card peeking in —
+        // a real swipe affordance, not four full-width cards stacked tall.
+        // Desktop has the width to just show the grid at once.
+        <div className="no-scrollbar -mx-5 mt-16 flex snap-x snap-mandatory gap-5 overflow-x-auto px-5 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-x-8 sm:gap-y-14 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-4">
+          {categories.map((category, i) => (
+            <div
+              key={category.id}
+              className="w-[76%] shrink-0 snap-start sm:w-auto sm:shrink"
+            >
+              <CategoryCard category={category} index={i} />
+            </div>
           ))}
         </div>
       )}
