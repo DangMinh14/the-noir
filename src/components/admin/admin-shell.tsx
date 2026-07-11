@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   LayoutDashboard,
   Coffee,
@@ -33,17 +34,28 @@ const NAV: { key: AdminTab; label: string; icon: React.ElementType }[] = [
   { key: "users", label: "Users", icon: UsersIcon },
 ];
 
-export function AdminShell({
-  tab,
-  onTabChange,
-  children,
-}: {
-  tab: AdminTab;
-  onTabChange: (tab: AdminTab) => void;
-  children: React.ReactNode;
-}) {
+// Overview lives at the bare /admin; the other list views hang off ?tab=.
+// Edit screens (e.g. /admin/products/12) keep their parent section lit via
+// the pathname check below.
+function hrefFor(key: AdminTab): string {
+  return key === "overview" ? "/admin" : `/admin?tab=${key}`;
+}
+
+function resolveActive(pathname: string, tab: string | null): AdminTab {
+  if (pathname.startsWith("/admin/products")) return "products";
+  if (pathname.startsWith("/admin/categories")) return "categories";
+  if (pathname.startsWith("/admin/cities")) return "cities";
+  if (pathname.startsWith("/admin/toppings")) return "toppings";
+  const candidate = tab as AdminTab;
+  return NAV.some((n) => n.key === candidate) ? candidate : "overview";
+}
+
+export function AdminShell({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
-  const activeLabel = NAV.find((n) => n.key === tab)?.label ?? "Overview";
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const active = resolveActive(pathname, searchParams.get("tab"));
+  const activeLabel = NAV.find((n) => n.key === active)?.label ?? "Overview";
 
   return (
     <div className="flex min-h-dvh bg-noir-950">
@@ -67,20 +79,19 @@ export function AdminShell({
 
         <nav className="flex flex-1 flex-col gap-1 px-3 py-6" aria-label="Admin sections">
           {NAV.map(({ key, label, icon: Icon }) => (
-            <button
+            <Link
               key={key}
-              type="button"
-              onClick={() => onTabChange(key)}
-              aria-current={tab === key ? "page" : undefined}
-              className={`flex cursor-pointer items-center gap-3 px-3 py-2.5 text-left text-[13px] transition-colors ${
-                tab === key
+              href={hrefFor(key)}
+              aria-current={active === key ? "page" : undefined}
+              className={`flex items-center gap-3 px-3 py-2.5 text-left text-[13px] transition-colors ${
+                active === key
                   ? "border-l-2 border-gold-400 bg-gold-500/10 text-gold-300"
                   : "border-l-2 border-transparent text-cream-muted hover:bg-gold-500/5 hover:text-cream"
               }`}
             >
               <Icon size={17} aria-hidden />
               {label}
-            </button>
+            </Link>
           ))}
         </nav>
 
@@ -116,20 +127,19 @@ export function AdminShell({
             aria-label="Admin sections"
           >
             {NAV.map(({ key, label, icon: Icon }) => (
-              <button
+              <Link
                 key={key}
-                type="button"
-                onClick={() => onTabChange(key)}
-                aria-current={tab === key ? "page" : undefined}
-                className={`flex shrink-0 cursor-pointer items-center gap-2 border px-3.5 py-2 text-[12px] uppercase tracking-[0.15em] transition-colors ${
-                  tab === key
+                href={hrefFor(key)}
+                aria-current={active === key ? "page" : undefined}
+                className={`flex shrink-0 items-center gap-2 border px-3.5 py-2 text-[12px] uppercase tracking-[0.15em] transition-colors ${
+                  active === key
                     ? "border-gold-400 bg-gold-500/10 text-gold-300"
                     : "border-gold-500/15 text-cream-muted"
                 }`}
               >
                 <Icon size={14} aria-hidden />
                 {label}
-              </button>
+              </Link>
             ))}
           </nav>
         </div>

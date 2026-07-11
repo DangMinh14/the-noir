@@ -673,8 +673,8 @@ function OrderChatPanel({ order, token }: { order: Order; token: string | null }
               key={m.id}
               className={`max-w-[85%] px-3 py-2 text-sm ${
                 m.senderRole === "Staff"
-                  ? "self-start bg-noir-900/60 text-cream-muted"
-                  : "self-end bg-gold-500/10 text-cream"
+                  ? "self-end bg-gold-500/10 text-cream"
+                  : "self-start bg-noir-900/60 text-cream-muted"
               }`}
             >
               <p>{m.body}</p>

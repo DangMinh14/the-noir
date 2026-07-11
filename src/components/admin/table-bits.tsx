@@ -1,7 +1,31 @@
 "use client";
 
-import { Search } from "lucide-react";
+import Link from "next/link";
+import { ArrowLeft, Search } from "lucide-react";
 import { ApiError } from "@/lib/api";
+
+// "Back to <section> list" link for the dedicated edit screens.
+export function BackLink({
+  href,
+  children,
+}: {
+  href: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group mb-6 inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.2em] text-cream-muted transition-colors hover:text-gold-300"
+    >
+      <ArrowLeft
+        size={15}
+        aria-hidden
+        className="transition-transform duration-200 group-hover:-translate-x-0.5"
+      />
+      {children}
+    </Link>
+  );
+}
 
 export const thClass =
   "px-4 py-3 text-left text-[11px] uppercase tracking-[0.2em] text-gold-400";

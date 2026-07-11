@@ -57,14 +57,14 @@ export default function CheckoutPage() {
           <div className="flex gap-4">
             {user ? (
               <Link
-                href="/profile"
+                href="/orders"
                 className="border border-gold-500/40 px-5 py-2.5 text-[12px] uppercase tracking-[0.2em] text-gold-300 hover:border-gold-400 hover:bg-gold-500/10"
               >
-                View order history
+                View order activity
               </Link>
             ) : (
               <Link
-                href="/login?redirect=/profile"
+                href="/login?redirect=/orders"
                 className="border border-gold-500/40 px-5 py-2.5 text-[12px] uppercase tracking-[0.2em] text-gold-300 hover:border-gold-400 hover:bg-gold-500/10"
               >
                 Log in to track orders

@@ -72,6 +72,9 @@ export function UserMenu() {
             <MenuLink href="/profile" onSelect={() => setOpen(false)}>
               Profile
             </MenuLink>
+            <MenuLink href="/orders" onSelect={() => setOpen(false)}>
+              Order activity
+            </MenuLink>
             {user.role === "Admin" && (
               <MenuLink href="/admin" onSelect={() => setOpen(false)}>
                 Admin management
@@ -136,6 +139,9 @@ export function MobileAuthLinks({ onNavigate }: { onNavigate: () => void }) {
     <>
       <Link href="/profile" onClick={onNavigate} className={rowClass}>
         Profile
+      </Link>
+      <Link href="/orders" onClick={onNavigate} className={rowClass}>
+        Order activity
       </Link>
       {user.role === "Admin" && (
         <Link href="/admin" onClick={onNavigate} className={rowClass}>

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Reveal } from "./reveal";
-import { CategoryCard } from "./category-card";
+import { CollectionFan } from "./collection-fan";
 import { api, type Category } from "@/lib/api";
 
 export function Collection() {
@@ -34,19 +34,7 @@ export function Collection() {
       </Reveal>
 
       {categories && categories.length > 0 && (
-        // Mobile: horizontal snap carousel with the next card peeking in —
-        // a real swipe affordance, not four full-width cards stacked tall.
-        // Desktop has the width to just show the grid at once.
-        <div className="no-scrollbar -mx-5 mt-16 flex snap-x snap-mandatory gap-5 overflow-x-auto px-5 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-x-8 sm:gap-y-14 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-4">
-          {categories.map((category, i) => (
-            <div
-              key={category.id}
-              className="w-[76%] shrink-0 snap-start sm:w-auto sm:shrink"
-            >
-              <CategoryCard category={category} index={i} />
-            </div>
-          ))}
-        </div>
+        <CollectionFan categories={categories} />
       )}
 
       <Reveal delay={0.1}>

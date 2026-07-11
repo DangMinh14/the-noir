@@ -17,6 +17,14 @@ const nextConfig: NextConfig = {
         hostname: "localhost",
         port: "5051",
       },
+      {
+        protocol: "https",
+        hostname: "*.fly.dev",
+      },
+      {
+        protocol: "https",
+        hostname: "*.onrender.com",
+      },
     ],
   },
 };

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   EmptyState,
   PanelHeading,
@@ -13,16 +14,11 @@ import {
   thClass,
 } from "@/components/admin/table-bits";
 import { Pagination } from "@/components/admin/pagination";
-import {
-  ImageUploadField,
-  type ImageSelection,
-} from "@/components/admin/image-upload-field";
-import { FormError, SubmitButton, TextField } from "@/components/auth/fields";
+import { FormError } from "@/components/auth/fields";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
 import {
   api,
   resolveImageUrl,
-  uploadImage,
   FALLBACK_CATEGORY_IMAGE,
   type Category,
   type PagedResult,
@@ -31,16 +27,12 @@ import {
 const PAGE_SIZE = 10;
 
 export function CategoriesPanel({ token }: { token: string | null }) {
+  const router = useRouter();
   const [result, setResult] = useState<PagedResult<Category> | null>(null);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebouncedValue(search);
-  const [editing, setEditing] = useState<Category | "new" | null>(null);
-  const [imageSelection, setImageSelection] = useState<ImageSelection>({
-    kind: "unchanged",
-  });
   const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
 
   const load = useCallback(() => {
     const params = new URLSearchParams({ page: String(page), pageSize: String(PAGE_SIZE) });
@@ -53,48 +45,6 @@ export function CategoriesPanel({ token }: { token: string | null }) {
 
   useEffect(() => setPage(1), [debouncedSearch]);
 
-  function openForm(category: Category | "new") {
-    setEditing(category);
-    setImageSelection({ kind: "unchanged" });
-    setError(null);
-  }
-
-  async function save(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const form = new FormData(e.currentTarget);
-    const name = String(form.get("name"));
-    const allowsToppings = form.get("allowsToppings") === "on";
-
-    setBusy(true);
-    setError(null);
-    try {
-      let imageUrl: string;
-      if (imageSelection.kind === "file") {
-        imageUrl = await uploadImage(imageSelection.file, token);
-      } else if (imageSelection.kind === "url") {
-        imageUrl = imageSelection.url;
-      } else if (imageSelection.kind === "none") {
-        imageUrl = ""; // blank -> frontend falls back to the stock photo
-      } else {
-        imageUrl = editing && editing !== "new" ? editing.imageUrl : "";
-      }
-
-      const body = { name, imageUrl, allowsToppings };
-
-      if (editing === "new") {
-        await api("/api/categories", { method: "POST", token, body });
-      } else if (editing) {
-        await api(`/api/categories/${editing.id}`, { method: "PUT", token, body });
-      }
-      setEditing(null);
-      load();
-    } catch (err) {
-      setError(errorText(err));
-    } finally {
-      setBusy(false);
-    }
-  }
-
   async function remove(c: Category) {
     if (!window.confirm(`Delete "${c.name}"?`)) return;
     setError(null);
@@ -106,66 +56,18 @@ export function CategoriesPanel({ token }: { token: string | null }) {
     }
   }
 
-  const current = editing !== "new" ? editing : null;
-
   return (
     <section>
       <PanelHeading
         title="Categories"
         description="Group products on the menu. A category with products can't be deleted until they're moved."
         action={
-          <PrimaryButton onClick={() => openForm("new")}>
+          <PrimaryButton onClick={() => router.push("/admin/categories/new")}>
             New category
           </PrimaryButton>
         }
       />
       <FormError message={error} />
-
-      {editing && (
-        <form
-          onSubmit={save}
-          className="mb-8 mt-4 flex flex-col gap-5 border border-gold-500/15 bg-noir-900/60 p-6"
-        >
-          <ImageUploadField
-            currentImageUrl={current?.imageUrl}
-            onChange={setImageSelection}
-            label="Category photo"
-            fallbackImage={FALLBACK_CATEGORY_IMAGE}
-            helperText="No photo yet? Leave this empty and a stock photo is used until you upload one."
-          />
-          <div className="flex flex-wrap items-end gap-5">
-            <div className="min-w-48 flex-1">
-              <TextField
-                label="Name"
-                name="name"
-                defaultValue={current?.name}
-                placeholder="e.g. Milk Tea"
-                required
-                maxLength={50}
-              />
-            </div>
-            <label className="flex items-center gap-2.5 pb-3 text-sm text-cream-muted">
-              <input
-                type="checkbox"
-                name="allowsToppings"
-                defaultChecked={current?.allowsToppings ?? true}
-                className="h-4 w-4 accent-gold-500"
-              />
-              Allows toppings
-            </label>
-            <SubmitButton busy={busy}>
-              {editing === "new" ? "Create category" : "Save changes"}
-            </SubmitButton>
-            <button
-              type="button"
-              onClick={() => setEditing(null)}
-              className="cursor-pointer px-2 py-3 text-[12px] uppercase tracking-[0.2em] text-cream-faint hover:text-cream"
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
-      )}
 
       <div className="mb-4">
         <SearchField value={search} onChange={setSearch} placeholder="Search categories" />
@@ -206,7 +108,9 @@ export function CategoriesPanel({ token }: { token: string | null }) {
                     <td className={tdClass}>{formatDate(c.createdAt)}</td>
                     <td className={`${tdClass} text-right whitespace-nowrap`}>
                       <span className="inline-flex gap-4">
-                        <RowButton onClick={() => openForm(c)}>Edit</RowButton>
+                        <RowButton onClick={() => router.push(`/admin/categories/${c.id}`)}>
+                          Edit
+                        </RowButton>
                         <RowButton
                           danger
                           disabled={c.productCount > 0}
