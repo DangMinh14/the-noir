@@ -4,15 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion, MotionConfig, useReducedMotion } from "framer-motion";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowUpRight, ChevronDown, ChevronUp } from "lucide-react";
 import { resolveImageUrl, FALLBACK_CATEGORY_IMAGE, type Category } from "@/lib/api";
-
-// The active image is wiped in from the top edge; the others collapse to a
-// zero-height sliver so only one shows at a time.
-const clipVariants = {
-  visible: { clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)" },
-  hidden: { clipPath: "polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)" },
-};
 
 // Each glyph is two stacked copies: a dimmed one that slides up out of view
 // and a gold one that slides in from below, staggered left to right.
@@ -76,14 +69,16 @@ function SlideImage({
     ? FALLBACK_CATEGORY_IMAGE
     : resolveImageUrl(category.imageUrl, FALLBACK_CATEGORY_IMAGE);
 
+  // Simple crossfade: the active image fades in on top while the previous one
+  // fades out underneath. A tiny settle-scale keeps it from feeling flat
+  // without turning into a wipe.
   return (
     <motion.div
       className="absolute inset-0"
       style={{ zIndex: isActive ? 2 : 1 }}
-      variants={clipVariants}
       initial={false}
-      animate={isActive ? "visible" : "hidden"}
-      transition={{ ease: [0.33, 1, 0.68, 1], duration: reduce ? 0 : 0.8 }}
+      animate={{ opacity: isActive ? 1 : 0, scale: isActive ? 1 : 1.02 }}
+      transition={{ ease: [0.33, 1, 0.68, 1], duration: reduce ? 0 : 0.5 }}
     >
       <Image
         src={src}
@@ -93,7 +88,6 @@ function SlideImage({
         className="object-cover"
         onError={() => setImageFailed(true)}
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-noir-950/60 via-transparent to-transparent" />
     </motion.div>
   );
 }
@@ -180,12 +174,14 @@ export function CollectionSlideshow({ categories }: { categories: Category[] }) 
             const isActive = active === i;
             return (
               <li key={category.id}>
-                <Link
-                  href={`/menu?category=${category.id}`}
+                <button
+                  type="button"
                   onMouseEnter={() => setActive(i)}
                   onFocus={() => setActive(i)}
-                  aria-label={`See ${category.name}`}
-                  className="group flex gap-4 outline-none sm:gap-5"
+                  onClick={() => setActive(i)}
+                  aria-pressed={isActive}
+                  aria-label={`Show ${category.name}`}
+                  className="group flex w-full cursor-pointer gap-4 text-left outline-none sm:gap-5"
                 >
                   {/* Accent rail lights up on the active row. */}
                   <span
@@ -215,7 +211,7 @@ export function CollectionSlideshow({ categories }: { categories: Category[] }) 
                       </p>
                     )}
                   </div>
-                </Link>
+                </button>
               </li>
             );
           })}
@@ -238,7 +234,13 @@ export function CollectionSlideshow({ categories }: { categories: Category[] }) 
         </AnimatePresence>
       </div>
 
-      <div className="relative aspect-[4/5] w-full overflow-hidden bg-noir-800 ring-1 ring-gold-500/15 sm:aspect-[3/4] md:order-first">
+      {/* The image is the link into the menu; names above only switch which
+         image shows. */}
+      <Link
+        href={`/menu?category=${categories[active].id}`}
+        aria-label={`Open ${categories[active].name} on the menu`}
+        className="group relative block aspect-[4/5] w-full overflow-hidden bg-noir-800 ring-1 ring-gold-500/15 sm:aspect-[3/4] md:order-first"
+      >
         {categories.map((category, i) => (
           <SlideImage
             key={category.id}
@@ -247,7 +249,20 @@ export function CollectionSlideshow({ categories }: { categories: Category[] }) 
             reduce={reduce}
           />
         ))}
-      </div>
+
+        {/* Affordance: which category is shown + that clicking opens the menu. */}
+        <div className="pointer-events-none absolute inset-0 z-[3] flex items-end bg-gradient-to-t from-noir-950/80 via-transparent to-transparent p-6">
+          <div>
+            <p className="font-serif text-2xl text-cream sm:text-3xl">
+              {categories[active].name}
+            </p>
+            <span className="mt-1 flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-gold-300 opacity-80 transition-opacity duration-300 group-hover:opacity-100">
+              See the menu
+              <ArrowUpRight size={14} className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            </span>
+          </div>
+        </div>
+      </Link>
     </div>
   );
 }
