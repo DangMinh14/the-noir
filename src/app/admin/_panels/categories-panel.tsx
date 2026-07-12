@@ -87,6 +87,7 @@ export function CategoriesPanel({ token }: { token: string | null }) {
                 <tr>
                   <th className={thClass}></th>
                   <th className={thClass}>Name</th>
+                  <th className={thClass}>Description</th>
                   <th className={thClass}>Products</th>
                   <th className={thClass}>Created</th>
                   <th className={thClass}></th>
@@ -104,6 +105,13 @@ export function CategoriesPanel({ token }: { token: string | null }) {
                       />
                     </td>
                     <td className={`${tdClass} text-cream`}>{c.name}</td>
+                    <td className={`${tdClass} max-w-xs`}>
+                      {c.description ? (
+                        <span className="line-clamp-2">{c.description}</span>
+                      ) : (
+                        <span className="text-cream-faint">No description</span>
+                      )}
+                    </td>
                     <td className={tdClass}>{c.productCount}</td>
                     <td className={tdClass}>{formatDate(c.createdAt)}</td>
                     <td className={`${tdClass} text-right whitespace-nowrap`}>

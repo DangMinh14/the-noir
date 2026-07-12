@@ -75,6 +75,7 @@ export default function CategoryEditPage() {
 
       const body = {
         name: String(f.get("name")),
+        description: String(f.get("description")).trim(),
         imageUrl,
         allowsToppings: f.get("allowsToppings") === "on",
       };
@@ -124,6 +125,24 @@ export default function CategoryEditPage() {
             required
             maxLength={50}
           />
+
+          <label htmlFor="description" className="block">
+            <span className="mb-2 block text-[11px] uppercase tracking-[0.22em] text-cream-muted">
+              Description
+            </span>
+            <textarea
+              id="description"
+              name="description"
+              defaultValue={category?.description}
+              rows={2}
+              maxLength={280}
+              placeholder="One line shown under the name on the landing page, e.g. how it's brewed or served."
+              className="w-full resize-none border border-gold-500/20 bg-noir-950 px-4 py-3 text-sm leading-relaxed text-cream placeholder:text-cream-faint focus:border-gold-400 focus:outline-none"
+            />
+            <span className="mt-1.5 block text-[11px] leading-relaxed text-cream-faint">
+              Optional. A short, concrete blurb reads better than a long one.
+            </span>
+          </label>
 
           <label className="flex items-center gap-2.5 text-sm text-cream-muted">
             <input

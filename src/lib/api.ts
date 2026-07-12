@@ -39,6 +39,7 @@ export type PagedResult<T> = {
 export type Category = {
   id: number;
   name: string;
+  description: string;
   productCount: number;
   imageUrl: string;
   imageAlt: string;

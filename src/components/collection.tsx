@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Reveal } from "./reveal";
-import { CollectionFan } from "./collection-fan";
+import { CollectionSlideshow } from "./collection-slideshow";
 import { api, type Category } from "@/lib/api";
 
 export function Collection() {
@@ -34,7 +34,7 @@ export function Collection() {
       </Reveal>
 
       {categories && categories.length > 0 && (
-        <CollectionFan categories={categories} />
+        <CollectionSlideshow categories={categories} />
       )}
 
       <Reveal delay={0.1}>
